@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元素記号テスト | 高校化学学習ラボ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="quiz-container">
+
+        <h1>元素記号テスト</h1>
+
+        <p class="description">
+            原子番号1〜20の元素から10問出題します。
+        </p>
+
+        <section id="quiz-area">
+
+            <p id="question-number">第1問 / 10問</p>
+
+            <h2 id="question">
+                問題を読み込み中...
+            </h2>
+
+            <input
+                type="text"
+                id="answer"
+                placeholder="答えを入力"
+                autocomplete="off"
+            >
+
+            <button id="answer-button">
+                答える
+            </button>
+
+            <p id="result"></p>
+
+        </section>
+
+        <section id="score-area" class="hidden">
+
+            <h2>結果</h2>
+
+            <p id="score"></p>
+
+            <button id="retry-button">
+                もう一度挑戦
+            </button>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
