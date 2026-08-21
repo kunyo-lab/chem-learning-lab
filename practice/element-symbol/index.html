@@ -14,7 +14,7 @@
         <h1>元素記号テスト</h1>
 
         <p class="description">
-            原子番号1〜20の元素から10問出題します。
+             原子番号1〜20の元素からランダムに出題します。
         </p>
 
         <div class="question-count">
@@ -40,6 +40,40 @@
             </label>
 
         </div>
+
+        <div class="quiz-mode">
+            <p>問題形式を選んでください</p>
+
+            <label>
+                <input
+                    type="radio"
+                    name="quizMode"
+                    value="symbol-to-name"
+                    checked
+                >
+                元素記号 → 元素名
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="quizMode"
+                    value="name-to-symbol"
+                >
+                元素名 → 元素記号
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="quizMode"
+                    value="mix"
+                >
+                ミックス
+            </label>
+
+        </div>
+
         <section id="quiz-area">
 
             <p id="question-number">第1問 / 10問</p>

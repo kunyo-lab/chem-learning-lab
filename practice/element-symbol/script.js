@@ -22,6 +22,7 @@ const elements = [
 ];
 
 let totalQuestions = 10;
+let quizMode = "symbol-to-name";
 
 let questions = [];
 let currentQuestion = 0;
@@ -52,7 +53,7 @@ function createQuestions() {
 
     questions = selectedElements.map((element, index) => {
 
-        if (index < totalQuestions / 2) {
+        if (quizMode === "symbol-to-name") {
 
             return {
                 type: "symbol-to-name",
@@ -60,13 +61,33 @@ function createQuestions() {
                 answer: element.name
             };
 
-        } else {
+        } else if (quizMode === "name-to-symbol") {
 
             return {
                 type: "name-to-symbol",
                 question: `${element.name} の元素記号は？`,
                 answer: element.symbol
             };
+
+        } else {
+
+            if (index < totalQuestions / 2) {
+
+                return {
+                    type: "symbol-to-name",
+                    question: `${element.symbol} の元素名は？`,
+                    answer: element.name
+                };
+
+            } else {
+
+                return {
+                    type: "name-to-symbol",
+                    question: `${element.name} の元素記号は？`,
+                    answer: element.symbol
+                };
+
+            }
 
         }
 
@@ -160,12 +181,19 @@ function showScore() {
 
 function startQuiz() {
 
-        const selectedCount =
+    const selectedCount =
         document.querySelector(
             'input[name="questionCount"]:checked'
         );
 
+    const selectedMode =
+        document.querySelector(
+            'input[name="quizMode"]:checked'
+        );
+
     totalQuestions = Number(selectedCount.value);
+
+    quizMode = selectedMode.value;
 
 
     currentQuestion = 0;
@@ -210,6 +238,21 @@ const questionCountInputs =
     );
 
 questionCountInputs.forEach(function(input) {
+
+    input.addEventListener(
+        "change",
+        startQuiz
+    );
+
+});
+
+
+const quizModeInputs =
+    document.querySelectorAll(
+        'input[name="quizMode"]'
+    );
+
+quizModeInputs.forEach(function(input) {
 
     input.addEventListener(
         "change",

@@ -26,11 +26,31 @@ h1 {
     font-size: 28px;
 }
 
-input {
+#answer {
     width: 80%;
     padding: 12px;
     font-size: 18px;
     text-align: center;
+}
+
+.question-count,
+.quiz-mode {
+    margin-bottom: 25px;
+}
+
+.question-count label,
+.quiz-mode label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 12px;
+    white-space: nowrap;
+}
+
+question-count input[type="radio"],
+.quiz-mode input[type="radio"] {
+    width: auto;
+    padding: 0;
 }
 
 button {
