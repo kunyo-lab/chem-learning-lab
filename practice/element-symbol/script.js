@@ -78,18 +78,7 @@ function createQuestions() {
 
 
 function normalizeSymbol(text) {
-
-    text = text.trim();
-
-    if (text.length === 0) {
-        return "";
-    }
-
-    return (
-        text.charAt(0).toUpperCase()
-        +
-        text.slice(1).toLowerCase()
-    );
+    return text.trim().normalize("NFKC");
 }
 
 
