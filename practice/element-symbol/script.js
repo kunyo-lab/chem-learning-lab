@@ -21,7 +21,7 @@ const elements = [
     { number: 20, symbol: "Ca", name: "カルシウム" }
 ];
 
-const totalQuestions = 10;
+let totalQuestions = 10;
 
 let questions = [];
 let currentQuestion = 0;
@@ -37,7 +37,6 @@ const quizArea = document.getElementById("quiz-area");
 const scoreArea = document.getElementById("score-area");
 const scoreElement = document.getElementById("score");
 const retryButton = document.getElementById("retry-button");
-
 
 function shuffle(array) {
     return [...array].sort(() => Math.random() - 0.5);
@@ -161,6 +160,14 @@ function showScore() {
 
 function startQuiz() {
 
+        const selectedCount =
+        document.querySelector(
+            'input[name="questionCount"]:checked'
+        );
+
+    totalQuestions = Number(selectedCount.value);
+
+
     currentQuestion = 0;
     score = 0;
 
@@ -195,6 +202,21 @@ retryButton.addEventListener(
     "click",
     startQuiz
 );
+
+
+const questionCountInputs =
+    document.querySelectorAll(
+        'input[name="questionCount"]'
+    );
+
+questionCountInputs.forEach(function(input) {
+
+    input.addEventListener(
+        "change",
+        startQuiz
+    );
+
+});
 
 
 startQuiz();

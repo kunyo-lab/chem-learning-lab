@@ -17,6 +17,29 @@
             原子番号1〜20の元素から10問出題します。
         </p>
 
+        <div class="question-count">
+            <p>問題数を選んでください</p>
+
+            <label>
+                <input
+                    type="radio"
+                    name="questionCount"
+                    value="10"
+                    checked
+                >
+                10問
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="questionCount"
+                    value="20"
+                >
+                20問
+            </label>
+
+        </div>
         <section id="quiz-area">
 
             <p id="question-number">第1問 / 10問</p>
@@ -29,6 +52,7 @@
               ※元素記号は大文字・小文字を区別して判定します。<br>
                 例：Abが正解の場合、「ab」「AB」は不正解です。<br>
                 全角英字は半角英字に自動変換して判定します。
+            </p>
 
     <input
                 type="text"
