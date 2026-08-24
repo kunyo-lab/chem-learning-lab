@@ -21,26 +21,57 @@ h1 {
     margin-bottom: 30px;
 }
 
+
+/* =========================
+   問題表示
+========================= */
+
 #question {
     margin: 30px 0;
     font-size: 28px;
 }
+
+
+/* =========================
+   解答入力
+========================= */
 
 #answer {
     width: 80%;
     padding: 12px;
     font-size: 18px;
     text-align: center;
+    box-sizing: border-box;
 }
+
+
+/* =========================
+   設定画面
+========================= */
 
 .question-count,
 .quiz-mode,
-.quiz-range {
+.quiz-range,
+.periodic-table-setting {
     margin-bottom: 25px;
 }
 
+
+/* 設定項目の見出し */
+
+.question-count > p,
+.quiz-mode > p,
+.quiz-range > p,
+.periodic-table-setting > p {
+    font-weight: bold;
+}
+
+
+/* 問題数・問題形式 */
+
 .question-count label,
-.quiz-mode label {
+.quiz-mode label,
+.periodic-table-setting label {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -48,6 +79,9 @@ h1 {
     white-space: nowrap;
     font-weight: bold;
 }
+
+
+/* 出題範囲 */
 
 .quiz-range label {
     display: flex;
@@ -61,12 +95,21 @@ h1 {
     box-sizing: border-box;
 }
 
+
+/* ラジオボタン */
+
 .question-count input[type="radio"],
 .quiz-mode input[type="radio"],
-.quiz-range input[type="radio"] {
+.quiz-range input[type="radio"],
+.periodic-table-setting input[type="radio"] {
     width: auto;
     padding: 0;
 }
+
+
+/* =========================
+   テスト開始
+========================= */
 
 .start-area {
     margin-top: 30px;
@@ -79,12 +122,83 @@ h1 {
     font-weight: bold;
 }
 
+
+/* =========================
+   ボタン共通
+========================= */
+
 button {
     margin-top: 20px;
     padding: 12px 30px;
     font-size: 16px;
     cursor: pointer;
 }
+
+
+/* =========================
+   周期表から選ぶ
+========================= */
+
+.periodic-table-button-area {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.periodic-table-note {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+#periodic-table-button {
+    margin-top: 10px;
+}
+
+
+/* =========================
+   周期表表示エリア
+========================= */
+
+#periodic-table-area {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fb;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+#periodic-table-area h3 {
+    margin-top: 0;
+}
+
+
+/*
+   JavaScriptで周期表を作ったとき、
+   横にはみ出した場合は
+   スクロールできるようにしておく
+*/
+
+#periodic-table {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+
+/* =========================
+   結果
+========================= */
+
+#result {
+    min-height: 30px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+/* =========================
+   結果画面ボタン
+========================= */
 
 .result-buttons {
     display: flex;
@@ -93,15 +207,19 @@ button {
     flex-wrap: wrap;
 }
 
-#result {
-    min-height: 30px;
-    font-size: 18px;
-    font-weight: bold;
-}
+
+/* =========================
+   非表示
+========================= */
 
 .hidden {
     display: none;
 }
+
+
+/* =========================
+   スマートフォン対応
+========================= */
 
 @media (max-width: 600px) {
 
@@ -110,22 +228,209 @@ button {
         padding: 20px;
     }
 
+
+    /* 問題形式 */
+
     .quiz-mode label {
         display: flex;
         width: fit-content;
         margin: 10px auto;
     }
 
+
+    /* 周期表使用設定 */
+
+    .periodic-table-setting label {
+        display: flex;
+        width: fit-content;
+        margin: 10px auto;
+    }
+
+
+    /* 出題範囲 */
+
     .quiz-range label {
         white-space: normal;
     }
+
+
+    /* 解答欄 */
 
     #answer {
         width: 90%;
     }
 
+
+    /* 周期表エリア */
+
+    #periodic-table-area {
+        padding: 15px 10px;
+    }
+
+
+    /* 結果ボタン */
+
     .result-buttons {
         flex-direction: column;
         align-items: center;
     }
+
+}
+
+/* =========================
+   周期表
+========================= */
+
+#periodic-table {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+
+/* メイン周期表 */
+
+.periodic-table-grid {
+    display: grid;
+    grid-template-columns: repeat(18, 52px);
+    grid-auto-rows: 58px;
+    gap: 3px;
+
+    width: max-content;
+    margin: 0 auto 25px;
+}
+
+
+/* 周期表の空白マス */
+
+.periodic-table-empty {
+    width: 52px;
+    height: 58px;
+}
+
+
+/* 元素ボタン */
+
+.element-button {
+    width: 52px;
+    height: 58px;
+
+    margin: 0;
+    padding: 2px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #888;
+    background-color: white;
+
+    box-sizing: border-box;
+    cursor: pointer;
+
+    line-height: 1.05;
+}
+
+
+/* マウスを乗せたとき */
+
+.element-button:hover {
+    background-color: #eef5ff;
+}
+
+
+/* 原子番号 */
+
+.atomic-number {
+    align-self: flex-start;
+    margin-left: 3px;
+
+    font-size: 9px;
+}
+
+
+/* 元素記号 */
+
+.element-symbol {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+/* 元素名 */
+
+.element-name {
+    max-width: 48px;
+
+    font-size: 8px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ランタノイド・アクチノイドの場所 */
+
+.periodic-table-marker {
+    width: 52px;
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px dashed #aaa;
+
+    box-sizing: border-box;
+    font-size: 9px;
+}
+
+
+/* =========================
+   ランタノイド・アクチノイド
+========================= */
+
+.sub-periodic-table {
+    display: grid;
+
+    grid-template-columns:
+        85px repeat(15, 52px);
+
+    grid-auto-rows: 58px;
+
+    gap: 3px;
+
+    width: max-content;
+
+    margin: 8px auto;
+}
+
+
+/* ランタノイドなどの見出し */
+
+.sub-table-label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    padding-right: 8px;
+
+    font-size: 11px;
+    font-weight: bold;
+}
+
+
+/* =========================
+   スマホ
+========================= */
+
+@media (max-width: 600px) {
+
+    #periodic-table-area {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
 }
