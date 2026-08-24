@@ -1,113 +1,257 @@
+// ======================================================
+// 高校化学学習ラボ
+// 元素記号テスト
+// ======================================================
+
+
+// =========================
+// 初期設定
+// =========================
+
 let availableElements =
-    elements.filter(element => element.number <= 20);
+    elements.filter(
+        element => element.number <= 20
+    );
 
 let totalQuestions = 10;
+
 let quizMode = "symbol-to-name";
+
 let quizRange = "1-20";
+
 let periodicTableMode = "disabled";
 
+
 let questions = [];
+
 let currentQuestion = 0;
+
 let score = 0;
 
 
-// =========================
+// 解答処理中の二重送信防止
+let isAnswering = false;
+
+
+// 周期表をすでに作ったかどうか
+let periodicTableCreated = false;
+
+
+
+// ======================================================
 // HTML要素の取得
+// ======================================================
+
+
+// =========================
+// 問題関係
 // =========================
 
 const questionElement =
-    document.getElementById("question");
+    document.getElementById(
+        "question"
+    );
+
 
 const questionNumberElement =
-    document.getElementById("question-number");
+    document.getElementById(
+        "question-number"
+    );
+
 
 const answerInput =
-    document.getElementById("answer");
+    document.getElementById(
+        "answer"
+    );
+
 
 const answerButton =
-    document.getElementById("answer-button");
+    document.getElementById(
+        "answer-button"
+    );
+
 
 const resultElement =
-    document.getElementById("result");
+    document.getElementById(
+        "result"
+    );
+
+
+
+// =========================
+// 画面関係
+// =========================
+
+const settingsArea =
+    document.getElementById(
+        "settings-area"
+    );
 
 
 const quizArea =
-    document.getElementById("quiz-area");
+    document.getElementById(
+        "quiz-area"
+    );
+
 
 const scoreArea =
-    document.getElementById("score-area");
+    document.getElementById(
+        "score-area"
+    );
+
 
 const scoreElement =
-    document.getElementById("score");
+    document.getElementById(
+        "score"
+    );
 
-const retryButton =
-    document.getElementById("retry-button");
 
 
-const settingsArea =
-    document.getElementById("settings-area");
+// =========================
+// ボタン関係
+// =========================
 
 const startButton =
-    document.getElementById("start-button");
+    document.getElementById(
+        "start-button"
+    );
+
+
+const retryButton =
+    document.getElementById(
+        "retry-button"
+    );
+
 
 const settingsButton =
-    document.getElementById("settings-button");
+    document.getElementById(
+        "settings-button"
+    );
 
 
-// =========================
+
+// ======================================================
 // 周期表関係
-// =========================
+// ======================================================
 
 const periodicTableButtonArea =
-    document.getElementById("periodic-table-button-area");
+    document.getElementById(
+        "periodic-table-button-area"
+    );
+
 
 const periodicTableButton =
-    document.getElementById("periodic-table-button");
+    document.getElementById(
+        "periodic-table-button"
+    );
 
-const periodicTableArea =
-    document.getElementById("periodic-table-area");
+
+const periodicTableModal =
+    document.getElementById(
+        "periodic-table-modal"
+    );
+
 
 const periodicTable =
-    document.getElementById("periodic-table");
+    document.getElementById(
+        "periodic-table"
+    );
+
 
 const periodicTableCloseButton =
-    document.getElementById("periodic-table-close-button");
+    document.getElementById(
+        "periodic-table-close-button"
+    );
 
 
-// =========================
+const periodicTableBottomCloseButton =
+    document.getElementById(
+        "periodic-table-bottom-close-button"
+    );
+
+
+
+// ======================================================
 // 配列をシャッフル
-// =========================
+// ======================================================
 
 function shuffle(array) {
 
-    return [...array].sort(
-        () => Math.random() - 0.5
-    );
+    const shuffled =
+        [...array];
+
+
+    for (
+        let i = shuffled.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const randomIndex =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+
+        [
+            shuffled[i],
+            shuffled[randomIndex]
+        ] = [
+            shuffled[randomIndex],
+            shuffled[i]
+        ];
+
+    }
+
+
+    return shuffled;
 
 }
 
 
-// =========================
+
+// ======================================================
 // 出題範囲を設定
-// =========================
+// ======================================================
 
 function setAvailableElements() {
 
-    if (quizRange === "1-20") {
+
+    // 原子番号1〜20
+
+    if (
+        quizRange === "1-20"
+    ) {
 
         availableElements =
             elements.filter(
-                element => element.number <= 20
+                element =>
+                    element.number <= 20
             );
 
-    } else if (quizRange === "1-36") {
+    }
+
+
+    // 原子番号1〜36
+
+    else if (
+        quizRange === "1-36"
+    ) {
 
         availableElements =
             elements.filter(
-                element => element.number <= 36
+                element =>
+                    element.number <= 36
             );
 
-    } else if (quizRange === "important") {
+    }
+
+
+    // 高校化学重要元素
+
+    else if (
+        quizRange === "important"
+    ) {
 
         availableElements =
             elements.filter(
@@ -117,7 +261,14 @@ function setAvailableElements() {
                     )
             );
 
-    } else if (quizRange === "all") {
+    }
+
+
+    // 原子番号1〜118
+
+    else if (
+        quizRange === "all"
+    ) {
 
         availableElements =
             [...elements];
@@ -127,14 +278,19 @@ function setAvailableElements() {
 }
 
 
-// =========================
-// 問題作成
-// =========================
+
+// ======================================================
+// 問題を作る
+// ======================================================
 
 function createQuestions() {
 
+
     const shuffledElements =
-        shuffle(availableElements);
+        shuffle(
+            availableElements
+        );
+
 
     const selectedElements =
         shuffledElements.slice(
@@ -147,33 +303,68 @@ function createQuestions() {
         selectedElements.map(
             (element, index) => {
 
+
+                // =========================
+                // 元素記号 → 元素名
+                // =========================
+
                 if (
                     quizMode ===
                     "symbol-to-name"
                 ) {
 
                     return {
-                        type: "symbol-to-name",
+
+                        type:
+                            "symbol-to-name",
+
                         question:
                             `${element.symbol} の元素名は？`,
+
                         answer:
                             element.name
+
                     };
 
-                } else if (
+                }
+
+
+
+                // =========================
+                // 元素名 → 元素記号
+                // =========================
+
+                else if (
                     quizMode ===
                     "name-to-symbol"
                 ) {
 
                     return {
-                        type: "name-to-symbol",
+
+                        type:
+                            "name-to-symbol",
+
                         question:
                             `${element.name} の元素記号は？`,
+
                         answer:
                             element.symbol
+
                     };
 
-                } else {
+                }
+
+
+
+                // =========================
+                // ミックス
+                // =========================
+
+                else {
+
+
+                    // 前半
+                    // 元素記号 → 元素名
 
                     if (
                         index <
@@ -181,21 +372,37 @@ function createQuestions() {
                     ) {
 
                         return {
-                            type: "symbol-to-name",
+
+                            type:
+                                "symbol-to-name",
+
                             question:
                                 `${element.symbol} の元素名は？`,
+
                             answer:
                                 element.name
+
                         };
 
-                    } else {
+                    }
+
+
+                    // 後半
+                    // 元素名 → 元素記号
+
+                    else {
 
                         return {
-                            type: "name-to-symbol",
+
+                            type:
+                                "name-to-symbol",
+
                             question:
                                 `${element.name} の元素記号は？`,
+
                             answer:
                                 element.symbol
+
                         };
 
                     }
@@ -206,15 +413,21 @@ function createQuestions() {
         );
 
 
+    // ミックス時などの順番を
+    // さらにシャッフル
+
     questions =
-        shuffle(questions);
+        shuffle(
+            questions
+        );
 
 }
 
 
-// =========================
+
+// ======================================================
 // 元素記号の入力を整える
-// =========================
+// ======================================================
 
 function normalizeSymbol(text) {
 
@@ -225,113 +438,199 @@ function normalizeSymbol(text) {
 }
 
 
-// =========================
+
+// ======================================================
 // 周期表の配置
-// =========================
+// ======================================================
+
 
 // null は周期表の空白部分
 
 const periodicTableLayout = [
 
+
+    // =========================
     // 第1周期
+    // =========================
+
     [
         1,
-        null, null, null, null, null,
-        null, null, null, null, null,
-        null, null, null, null, null,
+
+        null, null, null,
+        null, null, null,
+        null, null, null,
+        null, null, null,
+        null, null, null,
         null,
+
         2
     ],
 
+
+
+    // =========================
     // 第2周期
+    // =========================
+
     [
         3, 4,
-        null, null, null, null,
-        null, null, null, null,
-        null, null,
+
+        null, null, null,
+        null, null, null,
+        null, null, null,
+        null,
+
         5, 6, 7, 8, 9, 10
     ],
 
+
+
+    // =========================
     // 第3周期
+    // =========================
+
     [
         11, 12,
-        null, null, null, null,
-        null, null, null, null,
-        null, null,
-        13, 14, 15, 16, 17, 18
+
+        null, null, null,
+        null, null, null,
+        null, null, null,
+        null,
+
+        13, 14, 15,
+        16, 17, 18
     ],
 
+
+
+    // =========================
     // 第4周期
+    // =========================
+
     [
-        19, 20, 21, 22, 23, 24,
-        25, 26, 27, 28, 29, 30,
-        31, 32, 33, 34, 35, 36
+        19, 20, 21,
+        22, 23, 24,
+        25, 26, 27,
+        28, 29, 30,
+        31, 32, 33,
+        34, 35, 36
     ],
 
+
+
+    // =========================
     // 第5周期
+    // =========================
+
     [
-        37, 38, 39, 40, 41, 42,
-        43, 44, 45, 46, 47, 48,
-        49, 50, 51, 52, 53, 54
+        37, 38, 39,
+        40, 41, 42,
+        43, 44, 45,
+        46, 47, 48,
+        49, 50, 51,
+        52, 53, 54
     ],
 
+
+
+    // =========================
     // 第6周期
+    // =========================
+
     [
-        55, 56,
+        55,
+        56,
+
         "lanthanide",
-        72, 73, 74, 75, 76,
-        77, 78, 79, 80, 81,
-        82, 83, 84, 85, 86
+
+        72, 73, 74,
+        75, 76, 77,
+        78, 79, 80,
+        81, 82, 83,
+        84, 85, 86
     ],
 
+
+
+    // =========================
     // 第7周期
+    // =========================
+
     [
-        87, 88,
+        87,
+        88,
+
         "actinide",
-        104, 105, 106, 107, 108,
-        109, 110, 111, 112, 113,
-        114, 115, 116, 117, 118
+
+        104, 105, 106,
+        107, 108, 109,
+        110, 111, 112,
+        113, 114, 115,
+        116, 117, 118
     ]
 
 ];
 
 
+
+// =========================
 // ランタノイド
+// =========================
 
 const lanthanides = [
-    57, 58, 59, 60, 61,
-    62, 63, 64, 65, 66,
-    67, 68, 69, 70, 71
+
+    57, 58, 59,
+    60, 61, 62,
+    63, 64, 65,
+    66, 67, 68,
+    69, 70, 71
+
 ];
 
 
+
+// =========================
 // アクチノイド
+// =========================
 
 const actinides = [
-    89, 90, 91, 92, 93,
-    94, 95, 96, 97, 98,
-    99, 100, 101, 102, 103
+
+    89, 90, 91,
+    92, 93, 94,
+    95, 96, 97,
+    98, 99, 100,
+    101, 102, 103
+
 ];
 
 
-// =========================
-// 元素ボタンを作る
-// =========================
 
-function createElementButton(atomicNumber) {
+// ======================================================
+// 元素ボタンを作る
+// ======================================================
+
+function createElementButton(
+    atomicNumber
+) {
+
 
     const element =
         elements.find(
             element =>
-                element.number === atomicNumber
+                element.number ===
+                atomicNumber
         );
 
 
     const button =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
 
 
-    button.type = "button";
+    button.type =
+        "button";
+
 
     button.classList.add(
         "element-button"
@@ -339,6 +638,7 @@ function createElementButton(atomicNumber) {
 
 
     button.innerHTML = `
+
         <span class="atomic-number">
             ${element.number}
         </span>
@@ -350,12 +650,13 @@ function createElementButton(atomicNumber) {
         <span class="element-name">
             ${element.name}
         </span>
+
     `;
 
 
     button.addEventListener(
         "click",
-        function() {
+        function () {
 
             selectElementFromPeriodicTable(
                 element
@@ -370,41 +671,60 @@ function createElementButton(atomicNumber) {
 }
 
 
-// =========================
+
+// ======================================================
 // 周期表を作る
-// =========================
+// ======================================================
 
 function createPeriodicTable() {
 
-    periodicTable.innerHTML = "";
+
+    periodicTable.innerHTML =
+        "";
 
 
+    // =========================
     // メイン周期表
+    // =========================
+
     const mainTable =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     mainTable.classList.add(
         "periodic-table-grid"
     );
 
 
+
     periodicTableLayout.forEach(
         row => {
+
 
             row.forEach(
                 item => {
 
+
+                    // =========================
                     // 空白
-                    if (item === null) {
+                    // =========================
+
+                    if (
+                        item === null
+                    ) {
 
                         const emptyCell =
                             document.createElement(
                                 "div"
                             );
 
+
                         emptyCell.classList.add(
                             "periodic-table-empty"
                         );
+
 
                         mainTable.appendChild(
                             emptyCell
@@ -412,9 +732,15 @@ function createPeriodicTable() {
 
                     }
 
-                    // ランタノイドの位置
+
+
+                    // =========================
+                    // ランタノイド位置
+                    // =========================
+
                     else if (
-                        item === "lanthanide"
+                        item ===
+                        "lanthanide"
                     ) {
 
                         const marker =
@@ -422,22 +748,31 @@ function createPeriodicTable() {
                                 "div"
                             );
 
+
                         marker.classList.add(
                             "periodic-table-marker"
                         );
+
 
                         marker.textContent =
                             "57-71";
 
+
                         mainTable.appendChild(
                             marker
                         );
 
                     }
 
-                    // アクチノイドの位置
+
+
+                    // =========================
+                    // アクチノイド位置
+                    // =========================
+
                     else if (
-                        item === "actinide"
+                        item ===
+                        "actinide"
                     ) {
 
                         const marker =
@@ -445,12 +780,15 @@ function createPeriodicTable() {
                                 "div"
                             );
 
+
                         marker.classList.add(
                             "periodic-table-marker"
                         );
 
+
                         marker.textContent =
                             "89-103";
+
 
                         mainTable.appendChild(
                             marker
@@ -458,13 +796,20 @@ function createPeriodicTable() {
 
                     }
 
+
+
+                    // =========================
                     // 通常の元素
+                    // =========================
+
                     else {
 
                         mainTable.appendChild(
+
                             createElementButton(
                                 item
                             )
+
                         );
 
                     }
@@ -481,12 +826,16 @@ function createPeriodicTable() {
     );
 
 
-    // =========================
+
+    // ==================================================
     // ランタノイド
-    // =========================
+    // ==================================================
 
     const lanthanideArea =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     lanthanideArea.classList.add(
         "sub-periodic-table"
@@ -494,11 +843,15 @@ function createPeriodicTable() {
 
 
     const lanthanideLabel =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     lanthanideLabel.classList.add(
         "sub-table-label"
     );
+
 
     lanthanideLabel.textContent =
         "ランタノイド";
@@ -513,9 +866,11 @@ function createPeriodicTable() {
         atomicNumber => {
 
             lanthanideArea.appendChild(
+
                 createElementButton(
                     atomicNumber
                 )
+
             );
 
         }
@@ -527,12 +882,16 @@ function createPeriodicTable() {
     );
 
 
-    // =========================
+
+    // ==================================================
     // アクチノイド
-    // =========================
+    // ==================================================
 
     const actinideArea =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     actinideArea.classList.add(
         "sub-periodic-table"
@@ -540,11 +899,15 @@ function createPeriodicTable() {
 
 
     const actinideLabel =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     actinideLabel.classList.add(
         "sub-table-label"
     );
+
 
     actinideLabel.textContent =
         "アクチノイド";
@@ -559,9 +922,11 @@ function createPeriodicTable() {
         atomicNumber => {
 
             actinideArea.appendChild(
+
                 createElementButton(
                     atomicNumber
                 )
+
             );
 
         }
@@ -572,22 +937,125 @@ function createPeriodicTable() {
         actinideArea
     );
 
+
+    periodicTableCreated =
+        true;
+
 }
 
 
-// =========================
+
+// ======================================================
+// 周期表モーダルを開く
+// ======================================================
+
+function openPeriodicTable() {
+
+
+    // 周期表が使用不可なら
+    // 何もしない
+
+    if (
+        periodicTableMode !==
+        "enabled"
+    ) {
+
+        return;
+
+    }
+
+
+    // 初回だけ周期表を作る
+
+    if (
+        !periodicTableCreated
+    ) {
+
+        createPeriodicTable();
+
+    }
+
+
+    periodicTableModal
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+    document.body
+        .classList
+        .add(
+            "modal-open"
+        );
+
+
+    // キーボード操作時に
+    // 閉じるボタンへフォーカス
+
+    periodicTableCloseButton
+        .focus();
+
+}
+
+
+
+// ======================================================
+// 周期表モーダルを閉じる
+// ======================================================
+
+function closePeriodicTable(
+    restoreFocus = false
+) {
+
+
+    periodicTableModal
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    document.body
+        .classList
+        .remove(
+            "modal-open"
+        );
+
+
+    if (
+        restoreFocus
+    ) {
+
+        periodicTableButton
+            .focus();
+
+    }
+
+}
+
+
+
+// ======================================================
 // 周期表から元素を選択
-// =========================
+// ======================================================
 
 function selectElementFromPeriodicTable(
     element
 ) {
 
+
     const question =
-        questions[currentQuestion];
+        questions[
+            currentQuestion
+        ];
 
 
+
+    // =========================
     // 元素記号 → 元素名
+    // =========================
+
     if (
         question.type ===
         "symbol-to-name"
@@ -598,7 +1066,12 @@ function selectElementFromPeriodicTable(
 
     }
 
+
+
+    // =========================
     // 元素名 → 元素記号
+    // =========================
+
     else if (
         question.type ===
         "name-to-symbol"
@@ -610,47 +1083,74 @@ function selectElementFromPeriodicTable(
     }
 
 
+
     // 選択しただけでは
     // 正誤判定しない
 
-    periodicTableArea.classList.add(
-        "hidden"
-    );
+    closePeriodicTable();
 
+
+    // 解答欄へ戻す
 
     answerInput.focus();
 
 }
 
 
-// =========================
-// 問題表示
-// =========================
+
+// ======================================================
+// 問題を表示
+// ======================================================
 
 function showQuestion() {
 
+
     const question =
-        questions[currentQuestion];
+        questions[
+            currentQuestion
+        ];
 
 
-    questionNumberElement.textContent =
+    questionNumberElement
+        .textContent =
+
         `第${currentQuestion + 1}問 / ${totalQuestions}問`;
 
 
-    questionElement.textContent =
+    questionElement
+        .textContent =
+
         question.question;
 
 
-    answerInput.value = "";
+    answerInput.value =
+        "";
 
-    resultElement.textContent = "";
+
+    resultElement.textContent =
+        "";
+
+
+    isAnswering =
+        false;
+
+
+    answerButton.disabled =
+        false;
+
+
+    answerInput.disabled =
+        false;
+
+
+    periodicTableButton.disabled =
+        false;
 
 
     // 新しい問題では
     // 周期表を閉じる
-    periodicTableArea.classList.add(
-        "hidden"
-    );
+
+    closePeriodicTable();
 
 
     answerInput.focus();
@@ -658,26 +1158,54 @@ function showQuestion() {
 }
 
 
-// =========================
-// 解答判定
-// =========================
+
+// ======================================================
+// 解答を判定
+// ======================================================
 
 function checkAnswer() {
 
-    const question =
-        questions[currentQuestion];
 
+    // 二重送信防止
 
-    let userAnswer =
-        answerInput.value.trim();
-
-
-    if (userAnswer === "") {
+    if (
+        isAnswering
+    ) {
 
         return;
 
     }
 
+
+    const question =
+        questions[
+            currentQuestion
+        ];
+
+
+    let userAnswer =
+        answerInput
+            .value
+            .trim();
+
+
+
+    // 空欄なら何もしない
+
+    if (
+        userAnswer === ""
+    ) {
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 元素記号の場合
+    // 全角英字を半角へ
+    // =========================
 
     if (
         question.type ===
@@ -692,6 +1220,28 @@ function checkAnswer() {
     }
 
 
+
+    isAnswering =
+        true;
+
+
+    answerButton.disabled =
+        true;
+
+
+    answerInput.disabled =
+        true;
+
+
+    periodicTableButton.disabled =
+        true;
+
+
+
+    // =========================
+    // 正解
+    // =========================
+
     if (
         userAnswer ===
         question.answer
@@ -699,100 +1249,164 @@ function checkAnswer() {
 
         score++;
 
+
         resultElement.textContent =
             "正解！";
 
-    } else {
+    }
+
+
+
+    // =========================
+    // 不正解
+    // =========================
+
+    else {
 
         resultElement.textContent =
+
             `不正解　正解は「${question.answer}」`;
 
     }
 
 
-    answerButton.disabled = true;
+
+    // 周期表が開いていた場合は閉じる
+
+    closePeriodicTable();
 
 
-    setTimeout(() => {
 
-        currentQuestion++;
+    // =========================
+    // 1秒後に次へ
+    // =========================
 
-        answerButton.disabled = false;
+    setTimeout(
+        () => {
 
 
-        if (
-            currentQuestion <
-            totalQuestions
-        ) {
+            currentQuestion++;
 
-            showQuestion();
 
-        } else {
+            if (
+                currentQuestion <
+                totalQuestions
+            ) {
 
-            showScore();
+                showQuestion();
 
-        }
+            }
 
-    }, 1000);
+
+            else {
+
+                showScore();
+
+            }
+
+        },
+
+        1000
+    );
 
 }
 
 
-// =========================
-// 結果表示
-// =========================
+
+// ======================================================
+// 結果を表示
+// ======================================================
 
 function showScore() {
 
-    quizArea.classList.add(
-        "hidden"
-    );
 
-    scoreArea.classList.remove(
-        "hidden"
-    );
+    closePeriodicTable();
 
 
-    periodicTableArea.classList.add(
-        "hidden"
-    );
+    quizArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    scoreArea
+        .classList
+        .remove(
+            "hidden"
+        );
 
 
     scoreElement.textContent =
+
         `${score} / ${totalQuestions} 点`;
 
 }
 
 
-// =========================
+
+// ======================================================
 // テスト開始
-// =========================
+// ======================================================
 
 function startQuiz() {
 
+
+    // =========================
+    // 問題数
+    // =========================
+
     const selectedCount =
         document.querySelector(
+
             'input[name="questionCount"]:checked'
+
         );
 
+
+
+    // =========================
+    // 問題形式
+    // =========================
 
     const selectedMode =
         document.querySelector(
+
             'input[name="quizMode"]:checked'
+
         );
 
+
+
+    // =========================
+    // 出題範囲
+    // =========================
 
     const selectedRange =
         document.querySelector(
+
             'input[name="quizRange"]:checked'
+
         );
 
+
+
+    // =========================
+    // 周期表使用設定
+    // =========================
 
     const selectedPeriodicTableMode =
         document.querySelector(
+
             'input[name="periodicTableMode"]:checked'
+
         );
 
+
+
+    // =========================
+    // 選択内容を保存
+    // =========================
 
     totalQuestions =
         Number(
@@ -812,28 +1426,62 @@ function startQuiz() {
         selectedPeriodicTableMode.value;
 
 
+
+    // =========================
+    // 出題範囲を反映
+    // =========================
+
     setAvailableElements();
 
 
-    currentQuestion = 0;
 
-    score = 0;
+    // =========================
+    // テスト初期化
+    // =========================
 
-
-    settingsArea.classList.add(
-        "hidden"
-    );
-
-    quizArea.classList.remove(
-        "hidden"
-    );
-
-    scoreArea.classList.add(
-        "hidden"
-    );
+    currentQuestion =
+        0;
 
 
-    // 周期表使用設定
+    score =
+        0;
+
+
+    isAnswering =
+        false;
+
+
+
+    // =========================
+    // 画面切り替え
+    // =========================
+
+    settingsArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    quizArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+    scoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+
+    // =========================
+    // 周期表ボタン
+    // =========================
+
     if (
         periodicTableMode ===
         "enabled"
@@ -841,86 +1489,152 @@ function startQuiz() {
 
         periodicTableButtonArea
             .classList
-            .remove("hidden");
-
-    } else {
-
-        periodicTableButtonArea
-            .classList
-            .add("hidden");
-
-        periodicTableArea
-            .classList
-            .add("hidden");
+            .remove(
+                "hidden"
+            );
 
     }
 
 
+    else {
+
+        periodicTableButtonArea
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        closePeriodicTable();
+
+    }
+
+
+
+    // =========================
+    // 問題作成
+    // =========================
+
     createQuestions();
+
+
+    // =========================
+    // 第1問を表示
+    // =========================
 
     showQuestion();
 
 
+
     quizArea.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+
     });
 
 }
 
 
-// =========================
+
+// ======================================================
 // 設定画面へ戻る
-// =========================
+// ======================================================
 
 function showSettings() {
 
-    quizArea.classList.add(
-        "hidden"
-    );
 
-    scoreArea.classList.add(
-        "hidden"
-    );
-
-    settingsArea.classList.remove(
-        "hidden"
-    );
+    closePeriodicTable();
 
 
-    periodicTableArea.classList.add(
-        "hidden"
-    );
+    quizArea
+        .classList
+        .add(
+            "hidden"
+        );
 
 
-    answerInput.value = "";
+    scoreArea
+        .classList
+        .add(
+            "hidden"
+        );
 
-    resultElement.textContent = "";
 
-    answerButton.disabled = false;
+    settingsArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+    answerInput.value =
+        "";
+
+
+    resultElement.textContent =
+        "";
+
+
+    answerButton.disabled =
+        false;
+
+
+    answerInput.disabled =
+        false;
+
+
+    isAnswering =
+        false;
+
 
 
     settingsArea.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+
     });
 
 }
 
 
-// =========================
+
+// ======================================================
 // イベント
+// ======================================================
+
+
+// =========================
+// 答える
 // =========================
 
 answerButton.addEventListener(
+
     "click",
+
     checkAnswer
+
 );
 
 
+
+// =========================
+// Enterキー
+// =========================
+
 answerInput.addEventListener(
+
     "keydown",
-    function(event) {
+
+    function (event) {
+
 
         if (
             event.key ===
@@ -932,56 +1646,163 @@ answerInput.addEventListener(
         }
 
     }
+
 );
 
 
-retryButton.addEventListener(
-    "click",
-    startQuiz
-);
 
+// =========================
+// テスト開始
+// =========================
 
 startButton.addEventListener(
+
     "click",
+
     startQuiz
+
 );
 
+
+
+// =========================
+// もう一度同じ条件で挑戦
+// =========================
+
+retryButton.addEventListener(
+
+    "click",
+
+    startQuiz
+
+);
+
+
+
+// =========================
+// 設定を変える
+// =========================
 
 settingsButton.addEventListener(
+
     "click",
+
     showSettings
+
 );
 
 
-// =========================
+
+// ======================================================
 // 周期表を開く
-// =========================
+// ======================================================
 
 periodicTableButton.addEventListener(
+
     "click",
-    function() {
 
-        createPeriodicTable();
+    openPeriodicTable
 
-        periodicTableArea.classList.remove(
-            "hidden"
-        );
-
-    }
 );
 
 
-// =========================
-// 周期表を閉じる
-// =========================
+
+// ======================================================
+// 右上の × で閉じる
+// ======================================================
 
 periodicTableCloseButton.addEventListener(
-    "click",
-    function() {
 
-        periodicTableArea.classList.add(
-            "hidden"
+    "click",
+
+    function () {
+
+        closePeriodicTable(
+            true
         );
 
     }
+
+);
+
+
+
+// ======================================================
+// 下のボタンで閉じる
+// ======================================================
+
+periodicTableBottomCloseButton.addEventListener(
+
+    "click",
+
+    function () {
+
+        closePeriodicTable(
+            true
+        );
+
+    }
+
+);
+
+
+
+// ======================================================
+// 暗い背景部分をクリックして閉じる
+// ======================================================
+
+periodicTableModal.addEventListener(
+
+    "click",
+
+    function (event) {
+
+
+        if (
+            event.target ===
+            periodicTableModal
+        ) {
+
+            closePeriodicTable(
+                true
+            );
+
+        }
+
+    }
+
+);
+
+
+
+// ======================================================
+// Escキーで閉じる
+// ======================================================
+
+document.addEventListener(
+
+    "keydown",
+
+    function (event) {
+
+
+        if (
+            event.key ===
+            "Escape"
+            &&
+            !periodicTableModal
+                .classList
+                .contains(
+                    "hidden"
+                )
+        ) {
+
+            closePeriodicTable(
+                true
+            );
+
+        }
+
+    }
+
 );

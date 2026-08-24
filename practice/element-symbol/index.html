@@ -3,16 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>元素記号テスト | 高校化学学習ラボ</title>
-    <link rel="stylesheet" href="style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        元素記号テスト | 高校化学学習ラボ
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 </head>
+
 
 <body>
 
+    <!-- =========================
+         テスト本体
+    ========================== -->
+
     <main class="quiz-container">
 
-        <h1>元素記号テスト</h1>
+        <h1>
+            元素記号テスト
+        </h1>
 
         <p class="description">
             選択した範囲の元素からランダムに出題します。
@@ -22,151 +40,221 @@
         <!-- =========================
              設定画面
         ========================== -->
+
         <section id="settings-area">
 
 
             <!-- 問題数 -->
+
             <div class="question-count">
 
-                <p>問題数を選んでください</p>
+                <p>
+                    問題数を選んでください
+                </p>
+
 
                 <label>
+
                     <input
                         type="radio"
                         name="questionCount"
                         value="10"
                         checked
                     >
+
                     10問
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="questionCount"
                         value="20"
                     >
+
                     20問
+
                 </label>
 
             </div>
 
 
-            <!-- 問題形式 -->
+
+            <!-- =========================
+                 問題形式
+            ========================== -->
+
             <div class="quiz-mode">
 
-                <p>問題形式を選んでください</p>
+                <p>
+                    問題形式を選んでください
+                </p>
+
 
                 <label>
+
                     <input
                         type="radio"
                         name="quizMode"
                         value="symbol-to-name"
                         checked
                     >
+
                     元素記号 → 元素名
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="quizMode"
                         value="name-to-symbol"
                     >
+
                     元素名 → 元素記号
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="quizMode"
                         value="mix"
                     >
+
                     ミックス
+
                 </label>
 
             </div>
 
 
-            <!-- 出題範囲 -->
+
+            <!-- =========================
+                 出題範囲
+            ========================== -->
+
             <div class="quiz-range">
 
-                <p>出題範囲を選んでください</p>
+                <p>
+                    出題範囲を選んでください
+                </p>
+
 
                 <label>
+
                     <input
                         type="radio"
                         name="quizRange"
                         value="1-20"
                         checked
                     >
+
                     原子番号 1〜20
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="quizRange"
                         value="1-36"
                     >
+
                     原子番号 1〜36
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="quizRange"
                         value="important"
                     >
+
                     高校化学重要元素
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="quizRange"
                         value="all"
                     >
+
                     すべて（原子番号 1〜118）
+
                 </label>
 
             </div>
 
 
+
             <!-- =========================
-                 周期表の使用設定
-                 今回追加
+                 周期表の使用
             ========================== -->
+
             <div class="periodic-table-setting">
 
-                <p>周期表の使用</p>
+                <p>
+                    周期表の使用
+                </p>
+
 
                 <label>
+
                     <input
                         type="radio"
                         name="periodicTableMode"
                         value="disabled"
                         checked
                     >
+
                     使用しない
+
                 </label>
 
+
                 <label>
+
                     <input
                         type="radio"
                         name="periodicTableMode"
                         value="enabled"
                     >
+
                     使用できる
+
                 </label>
 
             </div>
 
 
-            <!-- テスト開始 -->
+
+            <!-- =========================
+                 テスト開始
+            ========================== -->
+
             <div class="start-area">
 
-                <button id="start-button" type="button">
+                <button
+                    id="start-button"
+                    type="button"
+                >
                     テスト開始
                 </button>
 
@@ -179,25 +267,42 @@
         <!-- =========================
              問題画面
         ========================== -->
-        <section id="quiz-area" class="hidden">
+
+        <section
+            id="quiz-area"
+            class="hidden"
+        >
+
 
             <p id="question-number">
                 第1問 / 10問
             </p>
+
 
             <h2 id="question">
                 問題を読み込み中...
             </h2>
 
 
+
             <p class="input-note">
-                ※元素記号は大文字・小文字を区別して判定します。<br>
-                例：Abが正解の場合、「ab」「AB」は不正解です。<br>
+
+                ※元素記号は大文字・小文字を区別して判定します。
+                <br>
+
+                例：Abが正解の場合、「ab」「AB」は不正解です。
+                <br>
+
                 全角英字は半角英字に自動変換して判定します。
+
             </p>
 
 
-            <!-- 通常入力 -->
+
+            <!-- =========================
+                 解答入力
+            ========================== -->
+
             <div class="answer-input-area">
 
                 <input
@@ -206,6 +311,7 @@
                     placeholder="答えを入力"
                     autocomplete="off"
                 >
+
 
                 <button
                     id="answer-button"
@@ -219,20 +325,21 @@
 
 
             <!-- =========================
-                 周期表を開く部分
-
-                 「周期表を使用できる」を
-                 選択した場合だけ
-                 JavaScriptで表示する
+                 周期表を開くボタン
             ========================== -->
+
             <div
                 id="periodic-table-button-area"
                 class="periodic-table-button-area hidden"
             >
 
                 <p class="periodic-table-note">
-                    周期表から元素を選んで答えることもできます。
+
+                    周期表から元素を選んで
+                    答えることもできます。
+
                 </p>
+
 
                 <button
                     id="periodic-table-button"
@@ -245,39 +352,7 @@
 
 
 
-            <!-- =========================
-                 周期表本体
-            ========================== -->
-            <div
-                id="periodic-table-area"
-                class="hidden"
-            >
-
-                <h3>
-                    周期表から元素を選択
-                </h3>
-
-                <p>
-                    元素をクリックしてください。
-                </p>
-
-
-                <!--
-                    JavaScriptで
-                    周期表を自動生成する
-                -->
-                <div id="periodic-table"></div>
-
-
-                <button
-                    id="periodic-table-close-button"
-                    type="button"
-                >
-                    周期表を閉じる
-                </button>
-
-            </div>
-
+            <!-- 正誤表示 -->
 
             <p id="result"></p>
 
@@ -288,14 +363,22 @@
         <!-- =========================
              結果画面
         ========================== -->
-        <section id="score-area" class="hidden">
 
-            <h2>結果</h2>
+        <section
+            id="score-area"
+            class="hidden"
+        >
+
+            <h2>
+                結果
+            </h2>
+
 
             <p id="score"></p>
 
 
             <div class="result-buttons">
+
 
                 <button
                     id="retry-button"
@@ -304,12 +387,14 @@
                     もう一度同じ条件で挑戦
                 </button>
 
+
                 <button
                     id="settings-button"
                     type="button"
                 >
                     設定を変える
                 </button>
+
 
             </div>
 
@@ -319,14 +404,114 @@
 
 
 
+    <!-- ==================================================
+         周期表モーダル
+
+         main の外に置くのがポイント
+    =================================================== -->
+
+    <div
+        id="periodic-table-modal"
+        class="periodic-table-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="periodic-table-title"
+    >
+
+
+        <!-- モーダル本体 -->
+
+        <div class="periodic-table-modal-content">
+
+
+            <!-- =========================
+                 モーダル上部
+            ========================== -->
+
+            <div class="periodic-table-modal-header">
+
+
+                <h2 id="periodic-table-title">
+                    周期表から元素を選択
+                </h2>
+
+
+                <button
+                    id="periodic-table-close-button"
+                    class="periodic-table-close-button"
+                    type="button"
+                    aria-label="周期表を閉じる"
+                >
+                    ×
+                </button>
+
+
+            </div>
+
+
+
+            <!-- 説明 -->
+
+            <p class="periodic-table-modal-note">
+                元素をクリックしてください。
+            </p>
+
+
+
+            <!-- =========================
+                 周期表表示部分
+            ========================== -->
+
+            <div class="periodic-table-scroll">
+
+                <!--
+                    JavaScriptで
+                    この中に周期表を作ります
+                -->
+
+                <div id="periodic-table"></div>
+
+            </div>
+
+
+
+            <!-- =========================
+                 下側の閉じるボタン
+            ========================== -->
+
+            <button
+                id="periodic-table-bottom-close-button"
+                type="button"
+            >
+                周期表を閉じる
+            </button>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         JavaScript読み込み
+    ========================== -->
+
+
     <!-- 元素データ -->
+
     <script src="elements.js"></script>
 
-    <!-- 高校化学重要元素データ -->
+
+    <!-- 高校化学重要元素 -->
+
     <script src="elementSets.js"></script>
 
+
     <!-- テスト本体 -->
+
     <script src="script.js"></script>
+
 
 </body>
 
