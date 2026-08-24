@@ -14,8 +14,10 @@
         <h1>元素記号テスト</h1>
 
         <p class="description">
-             原子番号1〜20の元素からランダムに出題します。
+             選択した範囲の元素からランダムに出題します。
         </p>
+
+        <section id="settings-area">
 
         <div class="question-count">
             <p>問題数を選んでください</p>
@@ -74,9 +76,59 @@
 
         </div>
 
-        <section id="quiz-area">
+        <div class="quiz-range">
+            <p>出題範囲を選んでください</p>
 
-            <p id="question-number">第1問 / 10問</p>
+            <label>
+                <input
+                    type="radio"
+                    name="quizRange"
+                    value="1-20"
+                    checked
+                >
+                原子番号 1〜20
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="quizRange"
+                    value="1-36"
+                >
+                原子番号 1〜36
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="quizRange"
+                    value="important"
+                >
+                高校化学重要元素
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="quizRange"
+                    value="all"
+                >
+                すべて（原子番号 1〜118）
+            </label>
+
+        </div>
+
+        <div class="start-area">
+            <button id="start-button" type="button">
+                テスト開始
+            </button>
+        </div>
+
+        </section>
+
+        <section id="quiz-area" class="hidden">
+       
+             <p id="question-number">第1問 / 10問</p>
 
             <h2 id="question">
                 問題を読み込み中...
@@ -109,16 +161,24 @@
 
             <p id="score"></p>
 
-            <button id="retry-button">
-                もう一度挑戦
-            </button>
+            <div class="result-buttons">
+
+                <button id="retry-button" type="button">
+                    もう一度同じ条件で挑戦
+                </button>
+
+                <button id="settings-button" type="button">
+                    設定を変える
+                </button>
+
+            </div>
 
         </section>
-
+        
     </main>
 
     <script src="elements.js"></script>
     <script src="script.js"></script>
-    
+
 </body>
 </html>

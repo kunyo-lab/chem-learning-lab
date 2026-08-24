@@ -20,6 +20,11 @@ const scoreArea = document.getElementById("score-area");
 const scoreElement = document.getElementById("score");
 const retryButton = document.getElementById("retry-button");
 
+const settingsArea = document.getElementById("settings-area");
+const startButton = document.getElementById("start-button");
+const settingsButton = document.getElementById("settings-button");
+
+
 function shuffle(array) {
     return [...array].sort(() => Math.random() - 0.5);
 }
@@ -180,14 +185,35 @@ function startQuiz() {
     currentQuestion = 0;
     score = 0;
 
+    settingsArea.classList.add("hidden");
     quizArea.classList.remove("hidden");
     scoreArea.classList.add("hidden");
 
     createQuestions();
 
     showQuestion();
+
+    quizArea.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 }
 
+function showSettings() {
+
+    quizArea.classList.add("hidden");
+    scoreArea.classList.add("hidden");
+    settingsArea.classList.remove("hidden");
+
+    answerInput.value = "";
+    resultElement.textContent = "";
+    answerButton.disabled = false;
+
+    settingsArea.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
 
 answerButton.addEventListener(
     "click",
@@ -213,34 +239,13 @@ retryButton.addEventListener(
 );
 
 
-const questionCountInputs =
-    document.querySelectorAll(
-        'input[name="questionCount"]'
-    );
-
-questionCountInputs.forEach(function(input) {
-
-    input.addEventListener(
-        "change",
-        startQuiz
-    );
-
-});
+startButton.addEventListener(
+    "click",
+    startQuiz
+);
 
 
-const quizModeInputs =
-    document.querySelectorAll(
-        'input[name="quizMode"]'
-    );
-
-quizModeInputs.forEach(function(input) {
-
-    input.addEventListener(
-        "change",
-        startQuiz
-    );
-
-});
-
-
-startQuiz();
+settingsButton.addEventListener(
+    "click",
+    showSettings
+);
