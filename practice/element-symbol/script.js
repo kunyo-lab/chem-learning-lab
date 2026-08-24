@@ -1,25 +1,6 @@
-const elements = [
-    { number: 1, symbol: "H", name: "水素" },
-    { number: 2, symbol: "He", name: "ヘリウム" },
-    { number: 3, symbol: "Li", name: "リチウム" },
-    { number: 4, symbol: "Be", name: "ベリリウム" },
-    { number: 5, symbol: "B", name: "ホウ素" },
-    { number: 6, symbol: "C", name: "炭素" },
-    { number: 7, symbol: "N", name: "窒素" },
-    { number: 8, symbol: "O", name: "酸素" },
-    { number: 9, symbol: "F", name: "フッ素" },
-    { number: 10, symbol: "Ne", name: "ネオン" },
-    { number: 11, symbol: "Na", name: "ナトリウム" },
-    { number: 12, symbol: "Mg", name: "マグネシウム" },
-    { number: 13, symbol: "Al", name: "アルミニウム" },
-    { number: 14, symbol: "Si", name: "ケイ素" },
-    { number: 15, symbol: "P", name: "リン" },
-    { number: 16, symbol: "S", name: "硫黄" },
-    { number: 17, symbol: "Cl", name: "塩素" },
-    { number: 18, symbol: "Ar", name: "アルゴン" },
-    { number: 19, symbol: "K", name: "カリウム" },
-    { number: 20, symbol: "Ca", name: "カルシウム" }
-];
+const availableElements =
+    elements.filter(element => element.number <= 20);
+
 
 let totalQuestions = 10;
 let quizMode = "symbol-to-name";
@@ -46,7 +27,7 @@ function shuffle(array) {
 
 function createQuestions() {
 
-    const shuffledElements = shuffle(elements);
+    const shuffledElements = shuffle(availableElements);
 
     const selectedElements =
         shuffledElements.slice(0, totalQuestions);
