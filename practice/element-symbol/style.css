@@ -45,6 +45,7 @@ h1 {
     gap: 6px;
     margin: 0 12px;
     white-space: nowrap;
+    font-weight: bold;
 }
 
 question-count input[type="radio"],
