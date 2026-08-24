@@ -1,9 +1,9 @@
-const availableElements =
+let availableElements =
     elements.filter(element => element.number <= 20);
-
 
 let totalQuestions = 10;
 let quizMode = "symbol-to-name";
+let quizRange = "1-20";
 
 let questions = [];
 let currentQuestion = 0;
@@ -27,6 +27,34 @@ const settingsButton = document.getElementById("settings-button");
 
 function shuffle(array) {
     return [...array].sort(() => Math.random() - 0.5);
+}
+
+
+function setAvailableElements() {
+
+    if (quizRange === "1-20") {
+
+        availableElements =
+            elements.filter(element => element.number <= 20);
+
+    } else if (quizRange === "1-36") {
+
+        availableElements =
+            elements.filter(element => element.number <= 36);
+
+    } else if (quizRange === "important") {
+
+        availableElements =
+            elements.filter(element =>
+                importantElementNumbers.includes(element.number)
+            );
+
+    } else if (quizRange === "all") {
+
+        availableElements = [...elements];
+
+    }
+
 }
 
 
@@ -177,9 +205,18 @@ function startQuiz() {
             'input[name="quizMode"]:checked'
         );
 
+    const selectedRange =
+        document.querySelector(
+            'input[name="quizRange"]:checked'
+        );
+
     totalQuestions = Number(selectedCount.value);
 
     quizMode = selectedMode.value;
+
+    quizRange = selectedRange.value;
+
+    setAvailableElements();
 
 
     currentQuestion = 0;
