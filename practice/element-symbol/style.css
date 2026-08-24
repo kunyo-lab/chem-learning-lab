@@ -34,7 +34,8 @@ h1 {
 }
 
 .question-count,
-.quiz-mode {
+.quiz-mode,
+.quiz-range {
     margin-bottom: 25px;
 }
 
@@ -48,10 +49,34 @@ h1 {
     font-weight: bold;
 }
 
-question-count input[type="radio"],
-.quiz-mode input[type="radio"] {
+.quiz-range label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 290px;
+    max-width: 100%;
+    margin: 10px auto;
+    font-weight: bold;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.question-count input[type="radio"],
+.quiz-mode input[type="radio"],
+.quiz-range input[type="radio"] {
     width: auto;
     padding: 0;
+}
+
+.start-area {
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+#start-button {
+    padding: 14px 40px;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 button {
@@ -59,6 +84,13 @@ button {
     padding: 12px 30px;
     font-size: 16px;
     cursor: pointer;
+}
+
+.result-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 #result {
@@ -69,4 +101,31 @@ button {
 
 .hidden {
     display: none;
+}
+
+@media (max-width: 600px) {
+
+    .quiz-container {
+        margin: 20px 10px;
+        padding: 20px;
+    }
+
+    .quiz-mode label {
+        display: flex;
+        width: fit-content;
+        margin: 10px auto;
+    }
+
+    .quiz-range label {
+        white-space: normal;
+    }
+
+    #answer {
+        width: 90%;
+    }
+
+    .result-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
 }
