@@ -140,6 +140,23 @@ const perfectScoreArea =
 
 
 // =========================
+// 間違えた元素だけ再挑戦
+// =========================
+
+const wrongRetryArea =
+    document.getElementById(
+        "wrong-retry-area"
+    );
+
+
+const wrongRetryButton =
+    document.getElementById(
+        "wrong-retry-button"
+    );
+
+
+
+// =========================
 // ボタン関係
 // =========================
 
@@ -312,7 +329,7 @@ function setAvailableElements() {
 
 
 // ======================================================
-// 問題を作る
+// 通常の問題を作る
 // ======================================================
 
 function createQuestions() {
@@ -457,13 +474,57 @@ function createQuestions() {
         );
 
 
-    // ミックス時などの順番を
-    // さらにシャッフル
+    // 順番をさらにシャッフル
 
     questions =
         shuffle(
             questions
         );
+
+}
+
+
+
+// ======================================================
+// 間違えた問題から再挑戦用の問題を作る
+// ======================================================
+
+function createWrongRetryQuestions() {
+
+
+    // 現在の間違いを
+    // 再挑戦用としてコピーする
+
+    const retryQuestions =
+        wrongAnswers.map(
+            wrongAnswer => {
+
+
+                return {
+
+                    type:
+                        wrongAnswer.type,
+
+                    question:
+                        wrongAnswer.question,
+
+                    answer:
+                        wrongAnswer.correctAnswer,
+
+                    element:
+                        wrongAnswer.element
+
+                };
+
+            }
+        );
+
+
+    // 再挑戦時も順番をシャッフル
+
+    return shuffle(
+        retryQuestions
+    );
 
 }
 
@@ -1398,6 +1459,13 @@ function displayWrongAnswers() {
             );
 
 
+        wrongRetryArea
+            .classList
+            .add(
+                "hidden"
+            );
+
+
         perfectScoreArea
             .classList
             .remove(
@@ -1423,6 +1491,13 @@ function displayWrongAnswers() {
 
 
     wrongAnswersArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+    wrongRetryArea
         .classList
         .remove(
             "hidden"
@@ -1674,7 +1749,7 @@ function showScore() {
 
 
 // ======================================================
-// テスト開始
+// 通常テスト開始
 // ======================================================
 
 function startQuiz() {
@@ -1806,6 +1881,13 @@ function startQuiz() {
         );
 
 
+    wrongRetryArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
 
     // =========================
     // 画面切り替え
@@ -1871,6 +1953,191 @@ function startQuiz() {
     // =========================
 
     createQuestions();
+
+
+
+    // =========================
+    // 第1問を表示
+    // =========================
+
+    showQuestion();
+
+
+
+    quizArea.scrollIntoView({
+
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+
+    });
+
+}
+
+
+
+// ======================================================
+// 間違えた元素だけ再挑戦
+// ======================================================
+
+function startWrongRetry() {
+
+
+    // =========================
+    // 間違いがなければ
+    // 何もしない
+    // =========================
+
+    if (
+        wrongAnswers.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 間違えた問題から
+    // 再挑戦問題を作る
+    //
+    // wrongAnswersを消す前に
+    // 作ることが重要
+    // =========================
+
+    const retryQuestions =
+        createWrongRetryQuestions();
+
+
+
+    // =========================
+    // 再挑戦の問題数
+    // =========================
+
+    totalQuestions =
+        retryQuestions.length;
+
+
+
+    // =========================
+    // 問題をセット
+    // =========================
+
+    questions =
+        retryQuestions;
+
+
+
+    // =========================
+    // 再挑戦を初期化
+    // =========================
+
+    currentQuestion =
+        0;
+
+
+    score =
+        0;
+
+
+    wrongAnswers =
+        [];
+
+
+    isAnswering =
+        false;
+
+
+
+    // =========================
+    // 前回の結果表示を消す
+    // =========================
+
+    wrongAnswersList.innerHTML =
+        "";
+
+
+    wrongAnswersArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    perfectScoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    wrongRetryArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+
+    // =========================
+    // 画面切り替え
+    // =========================
+
+    settingsArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    scoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    quizArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+
+    // =========================
+    // 周期表ボタン
+    // =========================
+
+    if (
+        periodicTableMode ===
+        "enabled"
+    ) {
+
+        periodicTableButtonArea
+            .classList
+            .remove(
+                "hidden"
+            );
+
+    }
+
+
+    else {
+
+        periodicTableButtonArea
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        closePeriodicTable();
+
+    }
 
 
 
@@ -1970,6 +2237,13 @@ function showSettings() {
         );
 
 
+    wrongRetryArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
 
     settingsArea.scrollIntoView({
 
@@ -2039,6 +2313,20 @@ startButton.addEventListener(
     "click",
 
     startQuiz
+
+);
+
+
+
+// =========================
+// 間違えた元素だけ再挑戦
+// =========================
+
+wrongRetryButton.addEventListener(
+
+    "click",
+
+    startWrongRetry
 
 );
 

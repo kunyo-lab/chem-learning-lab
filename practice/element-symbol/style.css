@@ -371,6 +371,56 @@ button {
 }
 
 
+/* =================================================
+   間違えた元素だけ再挑戦
+================================================= */
+
+.wrong-retry-area {
+    margin-top: 30px;
+    margin-bottom: 10px;
+
+    padding-top: 25px;
+
+    border-top: 1px solid #dddddd;
+
+    text-align: center;
+}
+
+
+#wrong-retry-button {
+    margin-top: 0;
+
+    padding: 14px 32px;
+
+    border: 1px solid #d29b2c;
+
+    border-radius: 8px;
+
+    background-color: #fff4d6;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+/* マウスを乗せたとき */
+
+#wrong-retry-button:hover {
+    background-color: #ffe9ad;
+}
+
+
+/* キーボード操作時 */
+
+#wrong-retry-button:focus-visible {
+    outline: 3px solid #d29b2c;
+
+    outline-offset: 3px;
+}
+
+
 /* =========================
    結果画面ボタン
 ========================= */
@@ -808,6 +858,17 @@ button {
 
     .wrong-answer-number {
         font-size: 17px;
+    }
+
+
+    /* 間違えた元素だけ再挑戦 */
+
+    #wrong-retry-button {
+        width: 100%;
+
+        max-width: 320px;
+
+        padding: 14px 18px;
     }
 
 
