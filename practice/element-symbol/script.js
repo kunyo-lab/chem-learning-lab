@@ -21,6 +21,7 @@ let quizRange = "1-20";
 
 let periodicTableMode = "disabled";
 
+
 let questions = [];
 
 let currentQuestion = 0;
@@ -453,6 +454,89 @@ const settingsButton =
 
 
 // ======================================================
+// 学習記録画面関係
+// ======================================================
+
+const learningRecordButton =
+    document.getElementById(
+        "learning-record-button"
+    );
+
+
+const resultLearningRecordButton =
+    document.getElementById(
+        "result-learning-record-button"
+    );
+
+
+const learningRecordArea =
+    document.getElementById(
+        "learning-record-area"
+    );
+
+
+const learningRecordEmpty =
+    document.getElementById(
+        "learning-record-empty"
+    );
+
+
+const learningRecordContent =
+    document.getElementById(
+        "learning-record-content"
+    );
+
+
+const learningTotalSessions =
+    document.getElementById(
+        "learning-total-sessions"
+    );
+
+
+const learningTotalQuestions =
+    document.getElementById(
+        "learning-total-questions"
+    );
+
+
+const learningTotalCorrect =
+    document.getElementById(
+        "learning-total-correct"
+    );
+
+
+const learningTotalIncorrect =
+    document.getElementById(
+        "learning-total-incorrect"
+    );
+
+
+const learningCorrectRate =
+    document.getElementById(
+        "learning-correct-rate"
+    );
+
+
+const learningLastStudied =
+    document.getElementById(
+        "learning-last-studied"
+    );
+
+
+const learningElementsList =
+    document.getElementById(
+        "learning-elements-list"
+    );
+
+
+const learningRecordBackButton =
+    document.getElementById(
+        "learning-record-back-button"
+    );
+
+
+
+// ======================================================
 // 周期表関係
 // ======================================================
 
@@ -658,7 +742,7 @@ function createQuestions() {
                 // 元素名 → 元素記号
                 // =========================
 
-                else if (
+                if (
                     quizMode ===
                     "name-to-symbol"
                 ) {
@@ -687,53 +771,45 @@ function createQuestions() {
                 // ミックス
                 // =========================
 
-                else {
+                if (
+                    index <
+                    totalQuestions / 2
+                ) {
 
-                    if (
-                        index <
-                        totalQuestions / 2
-                    ) {
+                    return {
 
-                        return {
+                        type:
+                            "symbol-to-name",
 
-                            type:
-                                "symbol-to-name",
+                        question:
+                            `${element.symbol} の元素名は？`,
 
-                            question:
-                                `${element.symbol} の元素名は？`,
+                        answer:
+                            element.name,
 
-                            answer:
-                                element.name,
+                        element:
+                            element
 
-                            element:
-                                element
-
-                        };
-
-                    }
-
-
-                    else {
-
-                        return {
-
-                            type:
-                                "name-to-symbol",
-
-                            question:
-                                `${element.name} の元素記号は？`,
-
-                            answer:
-                                element.symbol,
-
-                            element:
-                                element
-
-                        };
-
-                    }
+                    };
 
                 }
+
+
+                return {
+
+                    type:
+                        "name-to-symbol",
+
+                    question:
+                        `${element.name} の元素記号は？`,
+
+                    answer:
+                        element.symbol,
+
+                    element:
+                        element
+
+                };
 
             }
         );
@@ -794,7 +870,9 @@ function normalizeSymbol(text) {
 
     return text
         .trim()
-        .normalize("NFKC");
+        .normalize(
+            "NFKC"
+        );
 
 }
 
@@ -804,9 +882,15 @@ function normalizeSymbol(text) {
 // 周期表の配置
 // ======================================================
 
+
+// null は周期表の空白部分
+
 const periodicTableLayout = [
 
+
+    // =========================
     // 第1周期
+    // =========================
 
     [
         1,
@@ -822,7 +906,10 @@ const periodicTableLayout = [
     ],
 
 
+
+    // =========================
     // 第2周期
+    // =========================
 
     [
         3, 4,
@@ -836,7 +923,10 @@ const periodicTableLayout = [
     ],
 
 
+
+    // =========================
     // 第3周期
+    // =========================
 
     [
         11, 12,
@@ -851,7 +941,10 @@ const periodicTableLayout = [
     ],
 
 
+
+    // =========================
     // 第4周期
+    // =========================
 
     [
         19, 20, 21,
@@ -863,7 +956,10 @@ const periodicTableLayout = [
     ],
 
 
+
+    // =========================
     // 第5周期
+    // =========================
 
     [
         37, 38, 39,
@@ -875,7 +971,10 @@ const periodicTableLayout = [
     ],
 
 
+
+    // =========================
     // 第6周期
+    // =========================
 
     [
         55,
@@ -891,7 +990,10 @@ const periodicTableLayout = [
     ],
 
 
+
+    // =========================
     // 第7周期
+    // =========================
 
     [
         87,
@@ -1043,7 +1145,9 @@ function createPeriodicTable() {
                 item => {
 
 
+                    // =========================
                     // 空白
+                    // =========================
 
                     if (
                         item === null
@@ -1067,7 +1171,10 @@ function createPeriodicTable() {
                     }
 
 
+
+                    // =========================
                     // ランタノイド位置
+                    // =========================
 
                     else if (
                         item ===
@@ -1096,7 +1203,10 @@ function createPeriodicTable() {
                     }
 
 
+
+                    // =========================
                     // アクチノイド位置
+                    // =========================
 
                     else if (
                         item ===
@@ -1125,7 +1235,10 @@ function createPeriodicTable() {
                     }
 
 
+
+                    // =========================
                     // 通常の元素
+                    // =========================
 
                     else {
 
@@ -1401,6 +1514,540 @@ function selectElementFromPeriodicTable(
 
 
 // ======================================================
+// 正解率を表示用の文字列にする
+// ======================================================
+
+function formatCorrectRate(
+    correct,
+    attempts
+) {
+
+    if (
+        attempts === 0
+    ) {
+
+        return "0%";
+
+    }
+
+
+    const rate =
+        correct / attempts * 100;
+
+
+    const rateText =
+        rate
+            .toFixed(1)
+            .replace(
+                ".0",
+                ""
+            );
+
+
+    return `${rateText}%`;
+
+}
+
+
+
+// ======================================================
+// 最終学習日時を見やすい形にする
+// ======================================================
+
+function formatLastStudiedAt(
+    isoString
+) {
+
+    if (
+        !isoString
+    ) {
+
+        return "-";
+
+    }
+
+
+    const date =
+        new Date(
+            isoString
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+
+        "ja-JP",
+
+        {
+
+            year:
+                "numeric",
+
+            month:
+                "long",
+
+            day:
+                "numeric",
+
+            hour:
+                "2-digit",
+
+            minute:
+                "2-digit"
+
+        }
+
+    ).format(
+        date
+    );
+
+}
+
+
+
+// ======================================================
+// 元素ごとの学習記録カードを作る
+// ======================================================
+
+function createLearningElementItem(
+    elementRecord
+) {
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+
+    item.classList.add(
+        "learning-element-item"
+    );
+
+
+
+    // =========================
+    // カード上部
+    // =========================
+
+    const header =
+        document.createElement(
+            "div"
+        );
+
+
+    header.classList.add(
+        "learning-element-header"
+    );
+
+
+
+    // 原子番号
+
+    const number =
+        document.createElement(
+            "span"
+        );
+
+
+    number.classList.add(
+        "learning-element-number"
+    );
+
+
+    number.textContent =
+        `No.${elementRecord.number}`;
+
+
+
+    // 元素記号
+
+    const symbol =
+        document.createElement(
+            "span"
+        );
+
+
+    symbol.classList.add(
+        "learning-element-symbol"
+    );
+
+
+    symbol.textContent =
+        elementRecord.symbol;
+
+
+
+    // 元素名
+
+    const name =
+        document.createElement(
+            "span"
+        );
+
+
+    name.classList.add(
+        "learning-element-name"
+    );
+
+
+    name.textContent =
+        elementRecord.name;
+
+
+
+    header.appendChild(
+        number
+    );
+
+
+    header.appendChild(
+        symbol
+    );
+
+
+    header.appendChild(
+        name
+    );
+
+
+    item.appendChild(
+        header
+    );
+
+
+
+    // =========================
+    // 成績部分
+    // =========================
+
+    const stats =
+        document.createElement(
+            "div"
+        );
+
+
+    stats.classList.add(
+        "learning-element-stats"
+    );
+
+
+
+    // 出題回数
+
+    const attempts =
+        document.createElement(
+            "p"
+        );
+
+
+    attempts.classList.add(
+        "learning-element-stat"
+    );
+
+
+    attempts.textContent =
+        `出題：${elementRecord.attempts}回`;
+
+
+
+    // 正解回数
+
+    const correct =
+        document.createElement(
+            "p"
+        );
+
+
+    correct.classList.add(
+        "learning-element-stat"
+    );
+
+
+    correct.textContent =
+        `正解：${elementRecord.correct}回`;
+
+
+
+    // 不正解回数
+
+    const incorrect =
+        document.createElement(
+            "p"
+        );
+
+
+    incorrect.classList.add(
+        "learning-element-stat"
+    );
+
+
+    incorrect.textContent =
+        `不正解：${elementRecord.incorrect}回`;
+
+
+
+    // 正解率
+
+    const rate =
+        document.createElement(
+            "p"
+        );
+
+
+    rate.classList.add(
+        "learning-element-rate"
+    );
+
+
+    rate.textContent =
+
+        `正解率：${
+
+            formatCorrectRate(
+                elementRecord.correct,
+                elementRecord.attempts
+            )
+
+        }`;
+
+
+
+    stats.appendChild(
+        attempts
+    );
+
+
+    stats.appendChild(
+        correct
+    );
+
+
+    stats.appendChild(
+        incorrect
+    );
+
+
+    stats.appendChild(
+        rate
+    );
+
+
+    item.appendChild(
+        stats
+    );
+
+
+    return item;
+
+}
+
+
+
+// ======================================================
+// 学習記録を画面に表示する
+// ======================================================
+
+function displayLearningRecord() {
+
+    const learningRecord =
+        loadLearningRecord();
+
+
+    learningElementsList.innerHTML =
+        "";
+
+
+
+    // =========================
+    // 学習記録がまだない
+    // =========================
+
+    if (
+        learningRecord.totalQuestions === 0
+    ) {
+
+        learningRecordEmpty
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+        learningRecordContent
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 学習記録あり
+    // =========================
+
+    learningRecordEmpty
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    learningRecordContent
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+
+    // =========================
+    // 全体の成績
+    // =========================
+
+    learningTotalSessions.textContent =
+        `${learningRecord.totalSessions}回`;
+
+
+    learningTotalQuestions.textContent =
+        `${learningRecord.totalQuestions}問`;
+
+
+    learningTotalCorrect.textContent =
+        `${learningRecord.totalCorrect}問`;
+
+
+    learningTotalIncorrect.textContent =
+        `${learningRecord.totalIncorrect}問`;
+
+
+    learningCorrectRate.textContent =
+
+        formatCorrectRate(
+
+            learningRecord.totalCorrect,
+
+            learningRecord.totalQuestions
+
+        );
+
+
+    learningLastStudied.textContent =
+
+        formatLastStudiedAt(
+
+            learningRecord.lastStudiedAt
+
+        );
+
+
+
+    // =========================
+    // 元素ごとの成績
+    // 原子番号順に並べる
+    // =========================
+
+    const elementRecords =
+
+        Object.values(
+            learningRecord.elements
+        )
+        .sort(
+            (a, b) =>
+                a.number - b.number
+        );
+
+
+    elementRecords.forEach(
+
+        elementRecord => {
+
+            learningElementsList
+                .appendChild(
+
+                    createLearningElementItem(
+                        elementRecord
+                    )
+
+                );
+
+        }
+
+    );
+
+}
+
+
+
+// ======================================================
+// 学習記録画面を表示する
+// ======================================================
+
+function showLearningRecord() {
+
+    closePeriodicTable();
+
+
+    settingsArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    quizArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    scoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    learningRecordArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+    displayLearningRecord();
+
+
+    learningRecordArea.scrollIntoView({
+
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+
+    });
+
+}
+
+
+
+// ======================================================
 // 問題を表示
 // ======================================================
 
@@ -1487,6 +2134,7 @@ function checkAnswer() {
             .trim();
 
 
+
     // 空欄なら何もしない
 
     if (
@@ -1496,6 +2144,7 @@ function checkAnswer() {
         return;
 
     }
+
 
 
     // =========================
@@ -1534,7 +2183,7 @@ function checkAnswer() {
 
 
     // =========================
-    // 正解かどうかを保存
+    // 正解かどうか
     // =========================
 
     const isCorrect =
@@ -1573,10 +2222,6 @@ function checkAnswer() {
             `不正解　正解は「${question.answer}」`;
 
 
-        // =========================
-        // 間違えた問題を保存
-        // =========================
-
         wrongAnswers.push({
 
             questionNumber:
@@ -1613,7 +2258,6 @@ function checkAnswer() {
     );
 
 
-
     closePeriodicTable();
 
 
@@ -1623,6 +2267,7 @@ function checkAnswer() {
     // =========================
 
     setTimeout(
+
         () => {
 
             currentQuestion++;
@@ -1647,6 +2292,7 @@ function checkAnswer() {
         },
 
         1000
+
     );
 
 }
@@ -1659,10 +2305,9 @@ function checkAnswer() {
 
 function displayWrongAnswers() {
 
-    // 以前の表示を消す
-
     wrongAnswersList.innerHTML =
         "";
+
 
 
     // =========================
@@ -1699,6 +2344,7 @@ function displayWrongAnswers() {
     }
 
 
+
     // =========================
     // 間違いあり
     // =========================
@@ -1725,6 +2371,7 @@ function displayWrongAnswers() {
 
 
     wrongAnswers.forEach(
+
         wrongAnswer => {
 
 
@@ -1780,7 +2427,6 @@ function displayWrongAnswers() {
 
 
             question.textContent =
-
                 wrongAnswer.question;
 
 
@@ -1892,6 +2538,7 @@ function displayWrongAnswers() {
                 );
 
         }
+
     );
 
 }
@@ -1906,7 +2553,6 @@ function showScore() {
 
 
     // ==================================================
-    // localStorageへ
     // テスト完了回数を保存
     // ==================================================
 
@@ -1917,6 +2563,13 @@ function showScore() {
 
 
     quizArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    learningRecordArea
         .classList
         .add(
             "hidden"
@@ -1934,10 +2587,6 @@ function showScore() {
 
         `${score} / ${totalQuestions} 点`;
 
-
-    // =========================
-    // 間違えた問題を表示
-    // =========================
 
     displayWrongAnswers();
 
@@ -1957,13 +2606,49 @@ function showScore() {
 
 
 // ======================================================
+// 結果表示部分を初期化
+// ======================================================
+
+function resetResultDisplay() {
+
+    wrongAnswersList.innerHTML =
+        "";
+
+
+    wrongAnswersArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    perfectScoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    wrongRetryArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+}
+
+
+
+// ======================================================
 // 通常テスト開始
 // ======================================================
 
 function startQuiz() {
 
 
+    // =========================
     // 問題数
+    // =========================
 
     const selectedCount =
         document.querySelector(
@@ -1973,7 +2658,10 @@ function startQuiz() {
         );
 
 
+
+    // =========================
     // 問題形式
+    // =========================
 
     const selectedMode =
         document.querySelector(
@@ -1983,7 +2671,10 @@ function startQuiz() {
         );
 
 
+
+    // =========================
     // 出題範囲
+    // =========================
 
     const selectedRange =
         document.querySelector(
@@ -1993,7 +2684,10 @@ function startQuiz() {
         );
 
 
+
+    // =========================
     // 周期表使用設定
+    // =========================
 
     const selectedPeriodicTableMode =
         document.querySelector(
@@ -2005,7 +2699,7 @@ function startQuiz() {
 
 
     // =========================
-    // 選択内容を保存
+    // 選択内容を反映
     // =========================
 
     totalQuestions =
@@ -2055,34 +2749,7 @@ function startQuiz() {
         false;
 
 
-
-    // =========================
-    // 前回の結果表示を初期化
-    // =========================
-
-    wrongAnswersList.innerHTML =
-        "";
-
-
-    wrongAnswersArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    perfectScoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    wrongRetryArea
-        .classList
-        .add(
-            "hidden"
-        );
+    resetResultDisplay();
 
 
 
@@ -2097,16 +2764,23 @@ function startQuiz() {
         );
 
 
-    quizArea
+    scoreArea
         .classList
-        .remove(
+        .add(
             "hidden"
         );
 
 
-    scoreArea
+    learningRecordArea
         .classList
         .add(
+            "hidden"
+        );
+
+
+    quizArea
+        .classList
+        .remove(
             "hidden"
         );
 
@@ -2152,6 +2826,7 @@ function startQuiz() {
     createQuestions();
 
 
+
     // =========================
     // 第1問を表示
     // =========================
@@ -2189,8 +2864,11 @@ function startWrongRetry() {
     }
 
 
+
+    // =========================
     // wrongAnswersを消す前に
     // 再挑戦問題を作る
+    // =========================
 
     const retryQuestions =
         createWrongRetryQuestions();
@@ -2202,6 +2880,7 @@ function startWrongRetry() {
 
     questions =
         retryQuestions;
+
 
 
     // =========================
@@ -2224,34 +2903,7 @@ function startWrongRetry() {
         false;
 
 
-
-    // =========================
-    // 前回の結果表示を消す
-    // =========================
-
-    wrongAnswersList.innerHTML =
-        "";
-
-
-    wrongAnswersArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    perfectScoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    wrongRetryArea
-        .classList
-        .add(
-            "hidden"
-        );
+    resetResultDisplay();
 
 
 
@@ -2267,6 +2919,13 @@ function startWrongRetry() {
 
 
     scoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    learningRecordArea
         .classList
         .add(
             "hidden"
@@ -2358,6 +3017,13 @@ function showSettings() {
         );
 
 
+    learningRecordArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
     settingsArea
         .classList
         .remove(
@@ -2385,34 +3051,7 @@ function showSettings() {
         false;
 
 
-
-    // =========================
-    // 結果表示を初期化
-    // =========================
-
-    wrongAnswersList.innerHTML =
-        "";
-
-
-    wrongAnswersArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    perfectScoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    wrongRetryArea
-        .classList
-        .add(
-            "hidden"
-        );
+    resetResultDisplay();
 
 
     settingsArea.scrollIntoView({
@@ -2520,6 +3159,50 @@ retryButton.addEventListener(
 // =========================
 
 settingsButton.addEventListener(
+
+    "click",
+
+    showSettings
+
+);
+
+
+
+// =========================
+// 学習記録を見る
+// 設定画面から
+// =========================
+
+learningRecordButton.addEventListener(
+
+    "click",
+
+    showLearningRecord
+
+);
+
+
+
+// =========================
+// 学習記録を見る
+// 結果画面から
+// =========================
+
+resultLearningRecordButton.addEventListener(
+
+    "click",
+
+    showLearningRecord
+
+);
+
+
+
+// =========================
+// 学習記録から設定画面へ戻る
+// =========================
+
+learningRecordBackButton.addEventListener(
 
     "click",
 

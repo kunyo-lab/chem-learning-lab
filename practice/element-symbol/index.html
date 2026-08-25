@@ -37,9 +37,10 @@
         </p>
 
 
-        <!-- =========================
+
+        <!-- ==================================================
              設定画面
-        ========================== -->
+        =================================================== -->
 
         <section id="settings-area">
 
@@ -262,13 +263,30 @@
 
             </div>
 
+
+
+            <!-- =========================
+                 学習記録を見る
+            ========================== -->
+
+            <div class="learning-record-button-area">
+
+                <button
+                    id="learning-record-button"
+                    type="button"
+                >
+                    学習記録を見る
+                </button>
+
+            </div>
+
         </section>
 
 
 
-        <!-- =========================
+        <!-- ==================================================
              問題画面
-        ========================== -->
+        =================================================== -->
 
         <section
             id="quiz-area"
@@ -364,9 +382,9 @@
 
 
 
-        <!-- =========================
+        <!-- ==================================================
              結果画面
-        ========================== -->
+        =================================================== -->
 
         <section
             id="score-area"
@@ -472,7 +490,236 @@
                 </button>
 
 
+                <button
+                    id="result-learning-record-button"
+                    type="button"
+                >
+                    学習記録を見る
+                </button>
+
+
             </div>
+
+        </section>
+
+
+
+        <!-- ==================================================
+             学習記録画面
+        =================================================== -->
+
+        <section
+            id="learning-record-area"
+            class="hidden"
+        >
+
+
+            <h2>
+                学習記録
+            </h2>
+
+
+            <p class="learning-record-description">
+                これまでの元素記号テストの学習記録です。
+            </p>
+
+
+
+            <!-- =========================
+                 学習記録なし
+            ========================== -->
+
+            <div
+                id="learning-record-empty"
+                class="learning-record-empty hidden"
+            >
+
+                <p>
+                    まだ学習記録がありません。
+                </p>
+
+                <p>
+                    テストに挑戦すると、ここに記録が表示されます。
+                </p>
+
+            </div>
+
+
+
+            <!-- =========================
+                 学習記録あり
+            ========================== -->
+
+            <div id="learning-record-content">
+
+
+                <!-- =========================
+                     全体の学習記録
+                ========================== -->
+
+                <div class="learning-summary">
+
+                    <h3>
+                        これまでの成績
+                    </h3>
+
+
+
+                    <div class="learning-summary-list">
+
+
+                        <div class="learning-summary-item">
+
+                            <span class="learning-summary-label">
+                                挑戦回数
+                            </span>
+
+                            <span
+                                id="learning-total-sessions"
+                                class="learning-summary-value"
+                            >
+                                0回
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="learning-summary-item">
+
+                            <span class="learning-summary-label">
+                                解いた問題
+                            </span>
+
+                            <span
+                                id="learning-total-questions"
+                                class="learning-summary-value"
+                            >
+                                0問
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="learning-summary-item">
+
+                            <span class="learning-summary-label">
+                                正解
+                            </span>
+
+                            <span
+                                id="learning-total-correct"
+                                class="learning-summary-value"
+                            >
+                                0問
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="learning-summary-item">
+
+                            <span class="learning-summary-label">
+                                不正解
+                            </span>
+
+                            <span
+                                id="learning-total-incorrect"
+                                class="learning-summary-value"
+                            >
+                                0問
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="learning-summary-item">
+
+                            <span class="learning-summary-label">
+                                正解率
+                            </span>
+
+                            <span
+                                id="learning-correct-rate"
+                                class="learning-summary-value"
+                            >
+                                0%
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================
+                     最終学習日時
+                ========================== -->
+
+                <div class="last-studied-area">
+
+                    <h3>
+                        最終学習
+                    </h3>
+
+                    <p id="learning-last-studied">
+                        -
+                    </p>
+
+                </div>
+
+
+
+                <!-- =========================
+                     元素ごとの記録
+                ========================== -->
+
+                <div class="element-learning-record">
+
+                    <h3>
+                        元素ごとの記録
+                    </h3>
+
+
+                    <p class="element-learning-record-note">
+                        これまでに出題された元素の成績を表示します。
+                    </p>
+
+
+                    <!--
+                        JavaScriptで
+                        元素ごとの学習記録を
+                        この中に表示します
+                    -->
+
+                    <div id="learning-elements-list"></div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =========================
+                 学習記録画面ボタン
+            ========================== -->
+
+            <div class="learning-record-buttons">
+
+                <button
+                    id="learning-record-back-button"
+                    type="button"
+                >
+                    設定画面へ戻る
+                </button>
+
+            </div>
+
 
         </section>
 

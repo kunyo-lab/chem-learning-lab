@@ -17,13 +17,16 @@ body.modal-open {
 }
 
 
+
 /* =========================
    テスト本体
 ========================= */
 
 .quiz-container {
     max-width: 600px;
+
     margin: 50px auto;
+
     padding: 30px;
 
     background-color: white;
@@ -47,6 +50,7 @@ h1 {
 }
 
 
+
 /* =========================
    設定画面
 ========================= */
@@ -59,6 +63,7 @@ h1 {
 }
 
 
+
 /* 設定項目の見出し */
 
 .question-count > p,
@@ -67,6 +72,7 @@ h1 {
 .periodic-table-setting > p {
     font-weight: bold;
 }
+
 
 
 /* =========================
@@ -90,6 +96,7 @@ h1 {
 
     font-weight: bold;
 }
+
 
 
 /* =========================
@@ -116,6 +123,7 @@ h1 {
 }
 
 
+
 /* =========================
    ラジオボタン
 ========================= */
@@ -125,8 +133,10 @@ h1 {
 .quiz-range input[type="radio"],
 .periodic-table-setting input[type="radio"] {
     width: auto;
+
     padding: 0;
 }
+
 
 
 /* =========================
@@ -143,8 +153,40 @@ h1 {
     padding: 14px 40px;
 
     font-size: 18px;
+
     font-weight: bold;
 }
+
+
+
+/* =========================
+   学習記録を見るボタン
+========================= */
+
+.learning-record-button-area {
+    margin-top: 10px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #dddddd;
+}
+
+
+#learning-record-button,
+#result-learning-record-button {
+    background-color: #f3f7ff;
+
+    border: 1px solid #8aa9d6;
+
+    border-radius: 6px;
+}
+
+
+#learning-record-button:hover,
+#result-learning-record-button:hover {
+    background-color: #e4eeff;
+}
+
 
 
 /* =========================
@@ -163,11 +205,13 @@ h1 {
 }
 
 
+
 /* 注意書き */
 
 .input-note {
     line-height: 1.7;
 }
+
 
 
 /* =========================
@@ -192,6 +236,7 @@ h1 {
 }
 
 
+
 /* =========================
    ボタン共通
 ========================= */
@@ -205,6 +250,7 @@ button {
 
     cursor: pointer;
 }
+
 
 
 /* =========================
@@ -233,6 +279,7 @@ button {
 }
 
 
+
 /* =========================
    正誤表示
 ========================= */
@@ -241,8 +288,10 @@ button {
     min-height: 30px;
 
     font-size: 18px;
+
     font-weight: bold;
 }
+
 
 
 /* =================================================
@@ -250,16 +299,18 @@ button {
 ================================================= */
 
 #score-area h2 {
-    margin-bottom: 15px;
+    margin-top: 0;
 }
 
 
 #score {
-    margin: 15px 0 30px;
+    margin: 20px 0 30px;
 
-    font-size: 28px;
+    font-size: 26px;
+
     font-weight: bold;
 }
+
 
 
 /* =========================
@@ -278,68 +329,47 @@ button {
 
 
 .wrong-answers-area h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-
     text-align: center;
 
-    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
-
-/* =========================
-   間違えた問題のカード
-========================= */
 
 .wrong-answer-item {
-    margin-bottom: 18px;
+    margin-bottom: 15px;
 
-    padding: 18px;
+    padding: 15px;
 
-    background-color: #f8f9fb;
+    background-color: #fff8f8;
 
-    border: 1px solid #dddddd;
+    border: 1px solid #e2bcbc;
 
-    border-radius: 10px;
-
-    box-sizing: border-box;
+    border-radius: 8px;
 }
 
 
-/* 問題番号 */
-
-.wrong-answer-number {
-    margin-top: 0;
-    margin-bottom: 10px;
-
-    font-size: 18px;
-    font-weight: bold;
-}
-
-
-/* 問題文 */
-
-.wrong-answer-question {
-    margin: 8px 0 15px;
-
-    font-weight: bold;
-}
-
-
-/* 自分の答え・正解 */
-
-.wrong-answer-detail {
-    margin: 7px 0;
+.wrong-answer-item p {
+    margin: 6px 0;
 
     line-height: 1.6;
 }
 
 
-/* 「あなたの答え」「正解」など */
+.wrong-answer-number {
+    font-weight: bold;
+}
+
+
+.wrong-answer-question {
+    font-weight: bold;
+}
+
 
 .wrong-answer-label {
     font-weight: bold;
 }
+
 
 
 /* =========================
@@ -351,74 +381,35 @@ button {
 
     padding: 20px;
 
-    background-color: #f5fbf6;
+    background-color: #f3fff5;
 
-    border: 1px solid #cfded1;
+    border: 1px solid #b7d9bd;
 
-    border-radius: 10px;
-}
-
-
-.perfect-score-area p {
-    margin: 8px 0;
+    border-radius: 8px;
 }
 
 
 .perfect-score-area p:first-child {
-    font-size: 22px;
+    font-size: 20px;
 
     font-weight: bold;
 }
 
 
-/* =================================================
+
+/* =========================
    間違えた元素だけ再挑戦
-================================================= */
+========================= */
 
 .wrong-retry-area {
-    margin-top: 30px;
-    margin-bottom: 10px;
-
-    padding-top: 25px;
-
-    border-top: 1px solid #dddddd;
-
-    text-align: center;
+    margin-top: 20px;
 }
 
 
 #wrong-retry-button {
-    margin-top: 0;
-
-    padding: 14px 32px;
-
-    border: 1px solid #d29b2c;
-
-    border-radius: 8px;
-
-    background-color: #fff4d6;
-
-    font-size: 17px;
     font-weight: bold;
-
-    cursor: pointer;
 }
 
-
-/* マウスを乗せたとき */
-
-#wrong-retry-button:hover {
-    background-color: #ffe9ad;
-}
-
-
-/* キーボード操作時 */
-
-#wrong-retry-button:focus-visible {
-    outline: 3px solid #d29b2c;
-
-    outline-offset: 3px;
-}
 
 
 /* =========================
@@ -434,8 +425,356 @@ button {
 
     flex-wrap: wrap;
 
-    margin-top: 30px;
+    margin-top: 25px;
 }
+
+
+
+/* =================================================
+   学習記録画面
+================================================= */
+
+#learning-record-area {
+    text-align: center;
+}
+
+
+#learning-record-area > h2 {
+    margin-top: 0;
+
+    margin-bottom: 10px;
+
+    font-size: 28px;
+}
+
+
+.learning-record-description {
+    margin-top: 0;
+
+    margin-bottom: 30px;
+
+    color: #555555;
+
+    line-height: 1.6;
+}
+
+
+
+/* =========================
+   学習記録なし
+========================= */
+
+.learning-record-empty {
+    margin: 30px 0;
+
+    padding: 25px 15px;
+
+    background-color: #f7f7f7;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 10px;
+}
+
+
+.learning-record-empty p {
+    margin: 8px 0;
+}
+
+
+
+/* =================================================
+   これまでの成績
+================================================= */
+
+.learning-summary {
+    margin-top: 25px;
+}
+
+
+.learning-summary h3 {
+    margin-bottom: 18px;
+}
+
+
+
+/* =========================
+   成績カード一覧
+========================= */
+
+.learning-summary-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(120px, 1fr)
+        );
+
+    gap: 12px;
+}
+
+
+
+/* =========================
+   成績カード
+========================= */
+
+.learning-summary-item {
+    min-height: 90px;
+
+    padding: 15px 8px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background-color: #f3f7ff;
+
+    border: 1px solid #c5d4ea;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+
+
+/* 項目名 */
+
+.learning-summary-label {
+    margin-bottom: 10px;
+
+    font-size: 14px;
+
+    color: #555555;
+}
+
+
+
+/* 数字 */
+
+.learning-summary-value {
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+
+/* =================================================
+   最終学習
+================================================= */
+
+.last-studied-area {
+    margin-top: 25px;
+
+    padding: 18px;
+
+    background-color: #f8f9fa;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 10px;
+}
+
+
+.last-studied-area h3 {
+    margin-top: 0;
+
+    margin-bottom: 10px;
+}
+
+
+#learning-last-studied {
+    margin-bottom: 0;
+
+    font-weight: bold;
+}
+
+
+
+/* =================================================
+   元素ごとの記録
+================================================= */
+
+.element-learning-record {
+    margin-top: 35px;
+
+    padding-top: 25px;
+
+    border-top: 1px solid #dddddd;
+}
+
+
+.element-learning-record h3 {
+    margin-top: 0;
+
+    margin-bottom: 8px;
+}
+
+
+.element-learning-record-note {
+    margin-top: 0;
+
+    margin-bottom: 20px;
+
+    color: #666666;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+
+/* =========================
+   元素記録一覧
+========================= */
+
+#learning-elements-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 12px;
+
+    text-align: left;
+}
+
+
+
+/*
+   下記のクラスは
+   JavaScriptで元素ごとのカードを
+   作るときに使用します
+*/
+
+
+/* =========================
+   元素記録カード
+========================= */
+
+.learning-element-item {
+    padding: 14px;
+
+    background-color: #fafafa;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 8px;
+
+    box-sizing: border-box;
+}
+
+
+
+/* =========================
+   元素カード上部
+========================= */
+
+.learning-element-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+
+
+/* 原子番号 */
+
+.learning-element-number {
+    min-width: 28px;
+
+    color: #666666;
+
+    font-size: 13px;
+}
+
+
+
+/* 元素記号 */
+
+.learning-element-symbol {
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+
+/* 元素名 */
+
+.learning-element-name {
+    font-weight: bold;
+}
+
+
+
+/* =========================
+   元素ごとの成績
+========================= */
+
+.learning-element-stats {
+    margin-top: 8px;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+
+    color: #444444;
+}
+
+
+.learning-element-stat {
+    margin: 2px 0;
+}
+
+
+
+/* 正解率 */
+
+.learning-element-rate {
+    margin-top: 8px;
+
+    padding-top: 8px;
+
+    border-top: 1px solid #e4e4e4;
+
+    font-weight: bold;
+}
+
+
+
+/* =================================================
+   学習記録画面ボタン
+================================================= */
+
+.learning-record-buttons {
+    margin-top: 30px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #dddddd;
+}
+
+
+#learning-record-back-button {
+    font-weight: bold;
+}
+
 
 
 /* =========================
@@ -445,6 +784,7 @@ button {
 .hidden {
     display: none;
 }
+
 
 
 /* =================================================
@@ -475,6 +815,7 @@ button {
 }
 
 
+
 /*
    .periodic-table-modal の display:flex が
    .hidden より後に書かれているので、
@@ -486,12 +827,14 @@ button {
 }
 
 
+
 /* =========================
    モーダル本体
 ========================= */
 
 .periodic-table-modal-content {
     width: 96%;
+
     max-width: 1160px;
 
     max-height: 94vh;
@@ -510,6 +853,7 @@ button {
 }
 
 
+
 /* =========================
    モーダル上部
 ========================= */
@@ -520,6 +864,7 @@ button {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     min-height: 45px;
@@ -533,6 +878,7 @@ button {
 
     font-size: 24px;
 }
+
 
 
 /* =========================
@@ -549,9 +895,11 @@ button {
     height: 42px;
 
     margin: 0;
+
     padding: 0;
 
     border: none;
+
     border-radius: 50%;
 
     background-color: #eeeeee;
@@ -569,6 +917,7 @@ button {
 }
 
 
+
 /* =========================
    モーダル説明
 ========================= */
@@ -576,6 +925,7 @@ button {
 .periodic-table-modal-note {
     margin: 15px 0 20px;
 }
+
 
 
 /* =========================
@@ -602,6 +952,7 @@ button {
 }
 
 
+
 /* =================================================
    メイン周期表
 ================================================= */
@@ -622,14 +973,17 @@ button {
 }
 
 
+
 /* =========================
    周期表の空白部分
 ========================= */
 
 .periodic-table-empty {
     width: 52px;
+
     height: 58px;
 }
+
 
 
 /* =================================================
@@ -638,9 +992,11 @@ button {
 
 .element-button {
     width: 52px;
+
     height: 58px;
 
     margin: 0;
+
     padding: 2px;
 
     display: flex;
@@ -648,6 +1004,7 @@ button {
     flex-direction: column;
 
     align-items: center;
+
     justify-content: center;
 
     border: 1px solid #888888;
@@ -662,6 +1019,7 @@ button {
 }
 
 
+
 /* マウスを乗せたとき */
 
 .element-button:hover {
@@ -669,6 +1027,7 @@ button {
 
     border-color: #555555;
 }
+
 
 
 /* =========================
@@ -684,6 +1043,7 @@ button {
 }
 
 
+
 /* =========================
    元素記号
 ========================= */
@@ -693,6 +1053,7 @@ button {
 
     font-weight: bold;
 }
+
 
 
 /* =========================
@@ -714,17 +1075,20 @@ button {
 }
 
 
+
 /* =================================================
    ランタノイド・アクチノイドの位置
 ================================================= */
 
 .periodic-table-marker {
     width: 52px;
+
     height: 58px;
 
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     border: 1px dashed #aaaaaa;
@@ -733,6 +1097,7 @@ button {
 
     font-size: 9px;
 }
+
 
 
 /* =================================================
@@ -755,12 +1120,14 @@ button {
 }
 
 
+
 /* 見出し */
 
 .sub-table-label {
     display: flex;
 
     align-items: center;
+
     justify-content: flex-end;
 
     padding-right: 8px;
@@ -773,6 +1140,7 @@ button {
 }
 
 
+
 /* =========================
    下側の閉じるボタン
 ========================= */
@@ -782,11 +1150,13 @@ button {
 }
 
 
+
 /* =================================================
    スマートフォン
 ================================================= */
 
 @media (max-width: 600px) {
+
 
     /* =========================
        テスト画面
@@ -799,7 +1169,10 @@ button {
     }
 
 
-    /* 問題形式 */
+
+    /* =========================
+       問題形式
+    ========================= */
 
     .quiz-mode label {
         display: flex;
@@ -810,7 +1183,10 @@ button {
     }
 
 
-    /* 周期表使用 */
+
+    /* =========================
+       周期表使用
+    ========================= */
 
     .periodic-table-setting label {
         display: flex;
@@ -821,64 +1197,85 @@ button {
     }
 
 
-    /* 出題範囲 */
+
+    /* =========================
+       出題範囲
+    ========================= */
 
     .quiz-range label {
         white-space: normal;
     }
 
 
-    /* 問題 */
+
+    /* =========================
+       問題
+    ========================= */
 
     #question {
         font-size: 24px;
     }
 
 
-    /* 解答欄 */
+
+    /* =========================
+       解答欄
+    ========================= */
 
     #answer {
         width: 90%;
     }
 
 
+
     /* =========================
-       結果画面
+       結果ボタン
     ========================= */
-
-    #score {
-        font-size: 24px;
-    }
-
-
-    .wrong-answer-item {
-        padding: 15px;
-    }
-
-
-    .wrong-answer-number {
-        font-size: 17px;
-    }
-
-
-    /* 間違えた元素だけ再挑戦 */
-
-    #wrong-retry-button {
-        width: 100%;
-
-        max-width: 320px;
-
-        padding: 14px 18px;
-    }
-
-
-    /* 結果ボタン */
 
     .result-buttons {
         flex-direction: column;
 
         align-items: center;
     }
+
+
+
+    /* =================================================
+       学習記録
+    ================================================= */
+
+    .learning-summary-list {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+
+    #learning-elements-list {
+        grid-template-columns: 1fr;
+    }
+
+
+    .learning-summary-item {
+        min-height: 85px;
+
+        padding: 12px 5px;
+    }
+
+
+    .learning-summary-value {
+        font-size: 20px;
+    }
+
+
+    .learning-record-buttons {
+        display: flex;
+
+        justify-content: center;
+    }
+
 
 
     /* =========================
@@ -908,12 +1305,14 @@ button {
 
     .periodic-table-close-button {
         width: 38px;
+
         height: 38px;
 
         font-size: 24px;
 
         line-height: 38px;
     }
+
 
 
     /*
@@ -924,6 +1323,7 @@ button {
     .periodic-table-grid,
     .sub-periodic-table {
         margin-left: 0;
+
         margin-right: 0;
     }
 
