@@ -4,9 +4,9 @@
 // ======================================================
 
 
-// =========================
+// ======================================================
 // 初期設定
-// =========================
+// ======================================================
 
 let availableElements =
     elements.filter(
@@ -20,7 +20,6 @@ let quizMode = "symbol-to-name";
 let quizRange = "1-20";
 
 let periodicTableMode = "disabled";
-
 
 let questions = [];
 
@@ -44,6 +43,280 @@ let isAnswering = false;
 // 周期表をすでに作ったかどうか
 
 let periodicTableCreated = false;
+
+
+
+// ======================================================
+// 学習記録 localStorage
+// ======================================================
+
+const learningRecordKey =
+    "chemLearningLabElementQuizLearningRecord";
+
+
+
+// ======================================================
+// 初期状態の学習記録を作る
+// ======================================================
+
+function createInitialLearningRecord() {
+
+    return {
+
+        totalSessions: 0,
+
+        totalQuestions: 0,
+
+        totalCorrect: 0,
+
+        totalIncorrect: 0,
+
+        lastStudiedAt: null,
+
+        elements: {}
+
+    };
+
+}
+
+
+
+// ======================================================
+// 学習記録を読み込む
+// ======================================================
+
+function loadLearningRecord() {
+
+    const savedRecord =
+        localStorage.getItem(
+            learningRecordKey
+        );
+
+
+    // 保存記録がまだない場合
+
+    if (
+        savedRecord === null
+    ) {
+
+        return createInitialLearningRecord();
+
+    }
+
+
+    try {
+
+        const parsedRecord =
+            JSON.parse(
+                savedRecord
+            );
+
+
+        return {
+
+            ...createInitialLearningRecord(),
+
+            ...parsedRecord,
+
+            elements:
+                parsedRecord.elements || {}
+
+        };
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "学習記録の読み込みに失敗しました。",
+            error
+        );
+
+
+        return createInitialLearningRecord();
+
+    }
+
+}
+
+
+
+// ======================================================
+// 学習記録を保存する
+// ======================================================
+
+function saveLearningRecord(
+    learningRecord
+) {
+
+    try {
+
+        localStorage.setItem(
+
+            learningRecordKey,
+
+            JSON.stringify(
+                learningRecord
+            )
+
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "学習記録の保存に失敗しました。",
+            error
+        );
+
+    }
+
+}
+
+
+
+// ======================================================
+// 1問分の学習記録を保存する
+// ======================================================
+
+function recordLearningAnswer(
+    question,
+    isCorrect
+) {
+
+    const learningRecord =
+        loadLearningRecord();
+
+
+    // =========================
+    // 全体の記録
+    // =========================
+
+    learningRecord.totalQuestions++;
+
+
+    if (
+        isCorrect
+    ) {
+
+        learningRecord.totalCorrect++;
+
+    }
+
+
+    else {
+
+        learningRecord.totalIncorrect++;
+
+    }
+
+
+    learningRecord.lastStudiedAt =
+        new Date().toISOString();
+
+
+
+    // =========================
+    // 元素ごとの記録
+    // =========================
+
+    const elementKey =
+        String(
+            question.element.number
+        );
+
+
+    // その元素の記録が
+    // まだ作られていない場合
+
+    if (
+        !learningRecord.elements[
+            elementKey
+        ]
+    ) {
+
+        learningRecord.elements[
+            elementKey
+        ] = {
+
+            number:
+                question.element.number,
+
+            symbol:
+                question.element.symbol,
+
+            name:
+                question.element.name,
+
+            attempts: 0,
+
+            correct: 0,
+
+            incorrect: 0
+
+        };
+
+    }
+
+
+    const elementRecord =
+        learningRecord.elements[
+            elementKey
+        ];
+
+
+    elementRecord.attempts++;
+
+
+    if (
+        isCorrect
+    ) {
+
+        elementRecord.correct++;
+
+    }
+
+
+    else {
+
+        elementRecord.incorrect++;
+
+    }
+
+
+    saveLearningRecord(
+        learningRecord
+    );
+
+}
+
+
+
+// ======================================================
+// テストを最後まで終えた記録を保存する
+// ======================================================
+
+function recordCompletedSession() {
+
+    const learningRecord =
+        loadLearningRecord();
+
+
+    learningRecord.totalSessions++;
+
+
+    learningRecord.lastStudiedAt =
+        new Date().toISOString();
+
+
+    saveLearningRecord(
+        learningRecord
+    );
+
+}
 
 
 
@@ -334,7 +607,6 @@ function setAvailableElements() {
 
 function createQuestions() {
 
-
     const shuffledElements =
         shuffle(
             availableElements
@@ -417,10 +689,6 @@ function createQuestions() {
 
                 else {
 
-
-                    // 前半
-                    // 元素記号 → 元素名
-
                     if (
                         index <
                         totalQuestions / 2
@@ -444,9 +712,6 @@ function createQuestions() {
 
                     }
 
-
-                    // 後半
-                    // 元素名 → 元素記号
 
                     else {
 
@@ -474,8 +739,6 @@ function createQuestions() {
         );
 
 
-    // 順番をさらにシャッフル
-
     questions =
         shuffle(
             questions
@@ -491,14 +754,9 @@ function createQuestions() {
 
 function createWrongRetryQuestions() {
 
-
-    // 現在の間違いを
-    // 再挑戦用としてコピーする
-
     const retryQuestions =
         wrongAnswers.map(
             wrongAnswer => {
-
 
                 return {
 
@@ -519,8 +777,6 @@ function createWrongRetryQuestions() {
             }
         );
 
-
-    // 再挑戦時も順番をシャッフル
 
     return shuffle(
         retryQuestions
@@ -548,15 +804,9 @@ function normalizeSymbol(text) {
 // 周期表の配置
 // ======================================================
 
-
-// null は周期表の空白部分
-
 const periodicTableLayout = [
 
-
-    // =========================
     // 第1周期
-    // =========================
 
     [
         1,
@@ -572,10 +822,7 @@ const periodicTableLayout = [
     ],
 
 
-
-    // =========================
     // 第2周期
-    // =========================
 
     [
         3, 4,
@@ -589,10 +836,7 @@ const periodicTableLayout = [
     ],
 
 
-
-    // =========================
     // 第3周期
-    // =========================
 
     [
         11, 12,
@@ -607,10 +851,7 @@ const periodicTableLayout = [
     ],
 
 
-
-    // =========================
     // 第4周期
-    // =========================
 
     [
         19, 20, 21,
@@ -622,10 +863,7 @@ const periodicTableLayout = [
     ],
 
 
-
-    // =========================
     // 第5周期
-    // =========================
 
     [
         37, 38, 39,
@@ -637,10 +875,7 @@ const periodicTableLayout = [
     ],
 
 
-
-    // =========================
     // 第6周期
-    // =========================
 
     [
         55,
@@ -656,10 +891,7 @@ const periodicTableLayout = [
     ],
 
 
-
-    // =========================
     // 第7周期
-    // =========================
 
     [
         87,
@@ -718,7 +950,6 @@ function createElementButton(
     atomicNumber
 ) {
 
-
     const element =
         elements.find(
             element =>
@@ -760,7 +991,9 @@ function createElementButton(
 
 
     button.addEventListener(
+
         "click",
+
         function () {
 
             selectElementFromPeriodicTable(
@@ -768,6 +1001,7 @@ function createElementButton(
             );
 
         }
+
     );
 
 
@@ -782,7 +1016,6 @@ function createElementButton(
 // ======================================================
 
 function createPeriodicTable() {
-
 
     periodicTable.innerHTML =
         "";
@@ -803,18 +1036,14 @@ function createPeriodicTable() {
     );
 
 
-
     periodicTableLayout.forEach(
         row => {
-
 
             row.forEach(
                 item => {
 
 
-                    // =========================
                     // 空白
-                    // =========================
 
                     if (
                         item === null
@@ -838,10 +1067,7 @@ function createPeriodicTable() {
                     }
 
 
-
-                    // =========================
                     // ランタノイド位置
-                    // =========================
 
                     else if (
                         item ===
@@ -870,10 +1096,7 @@ function createPeriodicTable() {
                     }
 
 
-
-                    // =========================
                     // アクチノイド位置
-                    // =========================
 
                     else if (
                         item ===
@@ -902,10 +1125,7 @@ function createPeriodicTable() {
                     }
 
 
-
-                    // =========================
                     // 通常の元素
-                    // =========================
 
                     else {
 
@@ -1056,7 +1276,6 @@ function createPeriodicTable() {
 
 function openPeriodicTable() {
 
-
     if (
         periodicTableMode !==
         "enabled"
@@ -1105,7 +1324,6 @@ function closePeriodicTable(
     restoreFocus = false
 ) {
 
-
     periodicTableModal
         .classList
         .add(
@@ -1141,17 +1359,13 @@ function selectElementFromPeriodicTable(
     element
 ) {
 
-
     const question =
         questions[
             currentQuestion
         ];
 
 
-
-    // =========================
     // 元素記号 → 元素名
-    // =========================
 
     if (
         question.type ===
@@ -1164,10 +1378,7 @@ function selectElementFromPeriodicTable(
     }
 
 
-
-    // =========================
     // 元素名 → 元素記号
-    // =========================
 
     else if (
         question.type ===
@@ -1178,7 +1389,6 @@ function selectElementFromPeriodicTable(
             element.symbol;
 
     }
-
 
 
     closePeriodicTable();
@@ -1195,7 +1405,6 @@ function selectElementFromPeriodicTable(
 // ======================================================
 
 function showQuestion() {
-
 
     const question =
         questions[
@@ -1278,7 +1487,6 @@ function checkAnswer() {
             .trim();
 
 
-
     // 空欄なら何もしない
 
     if (
@@ -1288,7 +1496,6 @@ function checkAnswer() {
         return;
 
     }
-
 
 
     // =========================
@@ -1309,7 +1516,6 @@ function checkAnswer() {
     }
 
 
-
     isAnswering =
         true;
 
@@ -1328,12 +1534,22 @@ function checkAnswer() {
 
 
     // =========================
+    // 正解かどうかを保存
+    // =========================
+
+    const isCorrect =
+
+        userAnswer ===
+        question.answer;
+
+
+
+    // =========================
     // 正解
     // =========================
 
     if (
-        userAnswer ===
-        question.answer
+        isCorrect
     ) {
 
         score++;
@@ -1352,11 +1568,9 @@ function checkAnswer() {
 
     else {
 
-
         resultElement.textContent =
 
             `不正解　正解は「${question.answer}」`;
-
 
 
         // =========================
@@ -1389,6 +1603,17 @@ function checkAnswer() {
 
 
 
+    // ==================================================
+    // localStorageへ1問分の学習記録を保存
+    // ==================================================
+
+    recordLearningAnswer(
+        question,
+        isCorrect
+    );
+
+
+
     closePeriodicTable();
 
 
@@ -1399,7 +1624,6 @@ function checkAnswer() {
 
     setTimeout(
         () => {
-
 
             currentQuestion++;
 
@@ -1435,12 +1659,10 @@ function checkAnswer() {
 
 function displayWrongAnswers() {
 
-
     // 以前の表示を消す
 
     wrongAnswersList.innerHTML =
         "";
-
 
 
     // =========================
@@ -1450,7 +1672,6 @@ function displayWrongAnswers() {
     if (
         wrongAnswers.length === 0
     ) {
-
 
         wrongAnswersArea
             .classList
@@ -1478,7 +1699,6 @@ function displayWrongAnswers() {
     }
 
 
-
     // =========================
     // 間違いあり
     // =========================
@@ -1504,14 +1724,11 @@ function displayWrongAnswers() {
         );
 
 
-
     wrongAnswers.forEach(
         wrongAnswer => {
 
 
-            // =========================
-            // カードを作る
-            // =========================
+            // カード
 
             const item =
                 document.createElement(
@@ -1525,9 +1742,7 @@ function displayWrongAnswers() {
 
 
 
-            // =========================
             // 問題番号
-            // =========================
 
             const number =
                 document.createElement(
@@ -1551,9 +1766,7 @@ function displayWrongAnswers() {
 
 
 
-            // =========================
             // 問題文
-            // =========================
 
             const question =
                 document.createElement(
@@ -1577,9 +1790,7 @@ function displayWrongAnswers() {
 
 
 
-            // =========================
             // 自分の答え
-            // =========================
 
             const userAnswer =
                 document.createElement(
@@ -1609,9 +1820,7 @@ function displayWrongAnswers() {
 
 
 
-            // =========================
             // 正解
-            // =========================
 
             const correctAnswer =
                 document.createElement(
@@ -1641,9 +1850,7 @@ function displayWrongAnswers() {
 
 
 
-            // =========================
             // 元素情報
-            // =========================
 
             const elementInfo =
                 document.createElement(
@@ -1679,11 +1886,6 @@ function displayWrongAnswers() {
             );
 
 
-
-            // =========================
-            // 一覧へ追加
-            // =========================
-
             wrongAnswersList
                 .appendChild(
                     item
@@ -1701,6 +1903,14 @@ function displayWrongAnswers() {
 // ======================================================
 
 function showScore() {
+
+
+    // ==================================================
+    // localStorageへ
+    // テスト完了回数を保存
+    // ==================================================
+
+    recordCompletedSession();
 
 
     closePeriodicTable();
@@ -1725,13 +1935,11 @@ function showScore() {
         `${score} / ${totalQuestions} 点`;
 
 
-
     // =========================
     // 間違えた問題を表示
     // =========================
 
     displayWrongAnswers();
-
 
 
     scoreArea.scrollIntoView({
@@ -1755,9 +1963,7 @@ function showScore() {
 function startQuiz() {
 
 
-    // =========================
     // 問題数
-    // =========================
 
     const selectedCount =
         document.querySelector(
@@ -1767,10 +1973,7 @@ function startQuiz() {
         );
 
 
-
-    // =========================
     // 問題形式
-    // =========================
 
     const selectedMode =
         document.querySelector(
@@ -1780,10 +1983,7 @@ function startQuiz() {
         );
 
 
-
-    // =========================
     // 出題範囲
-    // =========================
 
     const selectedRange =
         document.querySelector(
@@ -1793,10 +1993,7 @@ function startQuiz() {
         );
 
 
-
-    // =========================
     // 周期表使用設定
-    // =========================
 
     const selectedPeriodicTableMode =
         document.querySelector(
@@ -1955,13 +2152,11 @@ function startQuiz() {
     createQuestions();
 
 
-
     // =========================
     // 第1問を表示
     // =========================
 
     showQuestion();
-
 
 
     quizArea.scrollIntoView({
@@ -1985,11 +2180,6 @@ function startQuiz() {
 function startWrongRetry() {
 
 
-    // =========================
-    // 間違いがなければ
-    // 何もしない
-    // =========================
-
     if (
         wrongAnswers.length === 0
     ) {
@@ -1999,36 +2189,19 @@ function startWrongRetry() {
     }
 
 
-
-    // =========================
-    // 間違えた問題から
-    // 再挑戦問題を作る
-    //
     // wrongAnswersを消す前に
-    // 作ることが重要
-    // =========================
+    // 再挑戦問題を作る
 
     const retryQuestions =
         createWrongRetryQuestions();
 
 
-
-    // =========================
-    // 再挑戦の問題数
-    // =========================
-
     totalQuestions =
         retryQuestions.length;
 
 
-
-    // =========================
-    // 問題をセット
-    // =========================
-
     questions =
         retryQuestions;
-
 
 
     // =========================
@@ -2148,7 +2321,6 @@ function startWrongRetry() {
     showQuestion();
 
 
-
     quizArea.scrollIntoView({
 
         behavior:
@@ -2168,7 +2340,6 @@ function startWrongRetry() {
 // ======================================================
 
 function showSettings() {
-
 
     closePeriodicTable();
 
@@ -2244,7 +2415,6 @@ function showSettings() {
         );
 
 
-
     settingsArea.scrollIntoView({
 
         behavior:
@@ -2287,7 +2457,6 @@ answerInput.addEventListener(
     "keydown",
 
     function (event) {
-
 
         if (
             event.key ===
@@ -2424,7 +2593,6 @@ periodicTableModal.addEventListener(
 
     function (event) {
 
-
         if (
             event.target ===
             periodicTableModal
@@ -2451,7 +2619,6 @@ document.addEventListener(
     "keydown",
 
     function (event) {
-
 
         if (
             event.key ===
