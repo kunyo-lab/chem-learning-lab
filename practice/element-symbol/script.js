@@ -1,17 +1,13 @@
 // ======================================================
 // 高校化学学習ラボ
-// 元素記号テスト
+// 元素記号テスト v0.3.2
 // ======================================================
-
 
 // ======================================================
 // 初期設定
 // ======================================================
 
-let availableElements =
-    elements.filter(
-        element => element.number <= 20
-    );
+let availableElements = elements.filter(element => element.number <= 20);
 
 let totalQuestions = 10;
 
@@ -22,6 +18,12 @@ let quizRange = "1-20";
 let periodicTableMode = "disabled";
 
 
+// normal : 通常テスト
+// weak   : 苦手元素テスト
+
+let currentQuizType = "normal";
+
+
 let questions = [];
 
 let currentQuestion = 0;
@@ -29,9 +31,7 @@ let currentQuestion = 0;
 let score = 0;
 
 
-// =========================
 // 間違えた問題
-// =========================
 
 let wrongAnswers = [];
 
@@ -93,8 +93,6 @@ function loadLearningRecord() {
             learningRecordKey
         );
 
-
-    // 保存記録がまだない場合
 
     if (
         savedRecord === null
@@ -192,10 +190,6 @@ function recordLearningAnswer(
         loadLearningRecord();
 
 
-    // =========================
-    // 全体の記録
-    // =========================
-
     learningRecord.totalQuestions++;
 
 
@@ -220,18 +214,11 @@ function recordLearningAnswer(
 
 
 
-    // =========================
-    // 元素ごとの記録
-    // =========================
-
     const elementKey =
         String(
             question.element.number
         );
 
-
-    // その元素の記録が
-    // まだ作られていない場合
 
     if (
         !learningRecord.elements[
@@ -326,9 +313,7 @@ function recordCompletedSession() {
 // ======================================================
 
 
-// =========================
 // 問題関係
-// =========================
 
 const questionElement =
     document.getElementById(
@@ -361,9 +346,7 @@ const resultElement =
 
 
 
-// =========================
 // 画面関係
-// =========================
 
 const settingsArea =
     document.getElementById(
@@ -390,9 +373,7 @@ const scoreElement =
 
 
 
-// =========================
 // 間違えた問題関係
-// =========================
 
 const wrongAnswersArea =
     document.getElementById(
@@ -413,9 +394,7 @@ const perfectScoreArea =
 
 
 
-// =========================
 // 間違えた元素だけ再挑戦
-// =========================
 
 const wrongRetryArea =
     document.getElementById(
@@ -430,9 +409,7 @@ const wrongRetryButton =
 
 
 
-// =========================
 // ボタン関係
-// =========================
 
 const startButton =
     document.getElementById(
@@ -449,6 +426,23 @@ const retryButton =
 const settingsButton =
     document.getElementById(
         "settings-button"
+    );
+
+
+
+// ======================================================
+// 苦手元素から出題
+// ======================================================
+
+const weakElementsButton =
+    document.getElementById(
+        "weak-elements-button"
+    );
+
+
+const weakElementsMessage =
+    document.getElementById(
+        "weak-elements-message"
     );
 
 
@@ -603,8 +597,10 @@ function shuffle(array) {
             shuffled[i],
             shuffled[randomIndex]
         ] = [
+
             shuffled[randomIndex],
             shuffled[i]
+
         ];
 
     }
@@ -623,8 +619,6 @@ function shuffle(array) {
 function setAvailableElements() {
 
 
-    // 原子番号1〜20
-
     if (
         quizRange === "1-20"
     ) {
@@ -638,8 +632,6 @@ function setAvailableElements() {
     }
 
 
-    // 原子番号1〜36
-
     else if (
         quizRange === "1-36"
     ) {
@@ -652,8 +644,6 @@ function setAvailableElements() {
 
     }
 
-
-    // 高校化学重要元素
 
     else if (
         quizRange === "important"
@@ -670,8 +660,6 @@ function setAvailableElements() {
     }
 
 
-    // 原子番号1〜118
-
     else if (
         quizRange === "all"
     ) {
@@ -686,130 +674,206 @@ function setAvailableElements() {
 
 
 // ======================================================
-// 通常の問題を作る
+// 苦手元素を学習記録から取得する
 // ======================================================
 
-function createQuestions() {
+function getWeakElements() {
 
-    const shuffledElements =
-        shuffle(
-            availableElements
+    const learningRecord =
+        loadLearningRecord();
+
+
+    const weakElementNumbers =
+
+        Object.values(
+            learningRecord.elements
+        )
+        .filter(
+            elementRecord =>
+                Number(
+                    elementRecord.incorrect
+                ) > 0
+        )
+        .map(
+            elementRecord =>
+                Number(
+                    elementRecord.number
+                )
         );
 
 
-    const selectedElements =
-        shuffledElements.slice(
-            0,
-            totalQuestions
+    return elements.filter(
+        element =>
+            weakElementNumbers.includes(
+                element.number
+            )
+    );
+
+}
+
+
+
+// ======================================================
+// 苦手元素ボタンの状態を更新する
+// ======================================================
+
+function updateWeakElementsButtonState() {
+
+    const weakElements =
+        getWeakElements();
+
+
+    if (
+        weakElements.length === 0
+    ) {
+
+        weakElementsButton.disabled =
+            true;
+
+
+        weakElementsMessage.textContent =
+            "まだ苦手元素はありません。テストで間違えた元素がここから出題されます。";
+
+
+        weakElementsMessage
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+        return;
+
+    }
+
+
+    weakElementsButton.disabled =
+        false;
+
+
+    weakElementsMessage.textContent =
+        "";
+
+
+    weakElementsMessage
+        .classList
+        .add(
+            "hidden"
         );
 
+}
+
+
+
+// ======================================================
+// 1問分の問題を作る
+// ======================================================
+
+function createQuestion(
+    element,
+    type
+) {
+
+    if (
+        type ===
+        "symbol-to-name"
+    ) {
+
+        return {
+
+            type:
+                "symbol-to-name",
+
+            question:
+                `${element.symbol} の元素名は？`,
+
+            answer:
+                element.name,
+
+            element:
+                element
+
+        };
+
+    }
+
+
+    return {
+
+        type:
+            "name-to-symbol",
+
+        question:
+            `${element.name} の元素記号は？`,
+
+        answer:
+            element.symbol,
+
+        element:
+            element
+
+    };
+
+}
+
+
+
+// ======================================================
+// 選ばれた元素から問題を作る
+// ======================================================
+
+function createQuestionsFromElements(
+    selectedElements
+) {
 
     questions =
         selectedElements.map(
             (element, index) => {
 
 
-                // =========================
-                // 元素記号 → 元素名
-                // =========================
-
                 if (
                     quizMode ===
                     "symbol-to-name"
                 ) {
 
-                    return {
-
-                        type:
-                            "symbol-to-name",
-
-                        question:
-                            `${element.symbol} の元素名は？`,
-
-                        answer:
-                            element.name,
-
-                        element:
-                            element
-
-                    };
+                    return createQuestion(
+                        element,
+                        "symbol-to-name"
+                    );
 
                 }
 
-
-
-                // =========================
-                // 元素名 → 元素記号
-                // =========================
 
                 if (
                     quizMode ===
                     "name-to-symbol"
                 ) {
 
-                    return {
-
-                        type:
-                            "name-to-symbol",
-
-                        question:
-                            `${element.name} の元素記号は？`,
-
-                        answer:
-                            element.symbol,
-
-                        element:
-                            element
-
-                    };
+                    return createQuestion(
+                        element,
+                        "name-to-symbol"
+                    );
 
                 }
 
-
-
-                // =========================
-                // ミックス
-                // =========================
 
                 if (
                     index <
                     totalQuestions / 2
                 ) {
 
-                    return {
-
-                        type:
-                            "symbol-to-name",
-
-                        question:
-                            `${element.symbol} の元素名は？`,
-
-                        answer:
-                            element.name,
-
-                        element:
-                            element
-
-                    };
+                    return createQuestion(
+                        element,
+                        "symbol-to-name"
+                    );
 
                 }
 
 
-                return {
-
-                    type:
-                        "name-to-symbol",
-
-                    question:
-                        `${element.name} の元素記号は？`,
-
-                    answer:
-                        element.symbol,
-
-                    element:
-                        element
-
-                };
+                return createQuestion(
+                    element,
+                    "name-to-symbol"
+                );
 
             }
         );
@@ -825,32 +889,136 @@ function createQuestions() {
 
 
 // ======================================================
-// 間違えた問題から再挑戦用の問題を作る
+// 通常の問題を作る
+// ======================================================
+
+function createQuestions() {
+
+    const selectedElements =
+
+        shuffle(
+            availableElements
+        )
+        .slice(
+            0,
+            totalQuestions
+        );
+
+
+    createQuestionsFromElements(
+        selectedElements
+    );
+
+}
+
+
+
+// ======================================================
+// 苦手元素テスト用の問題を作る
+// ======================================================
+
+function createWeakElementsQuestions(
+    weakElements
+) {
+
+    const selectedElements =
+        [];
+
+
+    // 苦手元素が問題数以上ある場合
+
+    if (
+        weakElements.length >=
+        totalQuestions
+    ) {
+
+        selectedElements.push(
+
+            ...shuffle(
+                weakElements
+            )
+            .slice(
+                0,
+                totalQuestions
+            )
+
+        );
+
+    }
+
+
+    // 苦手元素が問題数より少ない場合
+
+    else {
+
+        while (
+            selectedElements.length <
+            totalQuestions
+        ) {
+
+            const shuffledWeakElements =
+                shuffle(
+                    weakElements
+                );
+
+
+            for (
+                const element of
+                shuffledWeakElements
+            ) {
+
+                selectedElements.push(
+                    element
+                );
+
+
+                if (
+                    selectedElements.length >=
+                    totalQuestions
+                ) {
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    createQuestionsFromElements(
+        selectedElements
+    );
+
+}
+
+
+
+// ======================================================
+// 今回間違えた問題から再挑戦用問題を作る
 // ======================================================
 
 function createWrongRetryQuestions() {
 
     const retryQuestions =
         wrongAnswers.map(
-            wrongAnswer => {
+            wrongAnswer => ({
 
-                return {
+                type:
+                    wrongAnswer.type,
 
-                    type:
-                        wrongAnswer.type,
+                question:
+                    wrongAnswer.question,
 
-                    question:
-                        wrongAnswer.question,
+                answer:
+                    wrongAnswer.correctAnswer,
 
-                    answer:
-                        wrongAnswer.correctAnswer,
+                element:
+                    wrongAnswer.element
 
-                    element:
-                        wrongAnswer.element
-
-                };
-
-            }
+            })
         );
 
 
@@ -882,101 +1050,88 @@ function normalizeSymbol(text) {
 // 周期表の配置
 // ======================================================
 
-
-// null は周期表の空白部分
-
 const periodicTableLayout = [
 
 
-    // =========================
     // 第1周期
-    // =========================
 
     [
+
         1,
 
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null,
+        null, null, null, null,
+        null, null, null, null,
+        null, null, null, null,
+        null, null, null, null,
 
         2
+
     ],
 
 
-
-    // =========================
     // 第2周期
-    // =========================
 
     [
+
         3, 4,
 
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null,
+        null, null, null, null,
+        null, null, null, null,
+        null, null,
 
         5, 6, 7, 8, 9, 10
+
     ],
 
 
-
-    // =========================
     // 第3周期
-    // =========================
 
     [
+
         11, 12,
 
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null,
+        null, null, null, null,
+        null, null, null, null,
+        null, null,
 
         13, 14, 15,
         16, 17, 18
+
     ],
 
 
-
-    // =========================
     // 第4周期
-    // =========================
 
     [
+
         19, 20, 21,
         22, 23, 24,
         25, 26, 27,
         28, 29, 30,
         31, 32, 33,
         34, 35, 36
+
     ],
 
 
-
-    // =========================
     // 第5周期
-    // =========================
 
     [
+
         37, 38, 39,
         40, 41, 42,
         43, 44, 45,
         46, 47, 48,
         49, 50, 51,
         52, 53, 54
+
     ],
 
 
-
-    // =========================
     // 第6周期
-    // =========================
 
     [
+
         55,
         56,
 
@@ -987,15 +1142,14 @@ const periodicTableLayout = [
         78, 79, 80,
         81, 82, 83,
         84, 85, 86
+
     ],
 
 
-
-    // =========================
     // 第7周期
-    // =========================
 
     [
+
         87,
         88,
 
@@ -1006,15 +1160,14 @@ const periodicTableLayout = [
         110, 111, 112,
         113, 114, 115,
         116, 117, 118
+
     ]
 
 ];
 
 
 
-// =========================
 // ランタノイド
-// =========================
 
 const lanthanides = [
 
@@ -1028,9 +1181,7 @@ const lanthanides = [
 
 
 
-// =========================
 // アクチノイド
-// =========================
 
 const actinides = [
 
@@ -1123,10 +1274,6 @@ function createPeriodicTable() {
         "";
 
 
-    // =========================
-    // メイン周期表
-    // =========================
-
     const mainTable =
         document.createElement(
             "div"
@@ -1139,15 +1286,13 @@ function createPeriodicTable() {
 
 
     periodicTableLayout.forEach(
+
         row => {
 
             row.forEach(
+
                 item => {
 
-
-                    // =========================
-                    // 空白
-                    // =========================
 
                     if (
                         item === null
@@ -1170,11 +1315,6 @@ function createPeriodicTable() {
 
                     }
 
-
-
-                    // =========================
-                    // ランタノイド位置
-                    // =========================
 
                     else if (
                         item ===
@@ -1203,11 +1343,6 @@ function createPeriodicTable() {
                     }
 
 
-
-                    // =========================
-                    // アクチノイド位置
-                    // =========================
-
                     else if (
                         item ===
                         "actinide"
@@ -1235,11 +1370,6 @@ function createPeriodicTable() {
                     }
 
 
-
-                    // =========================
-                    // 通常の元素
-                    // =========================
-
                     else {
 
                         mainTable.appendChild(
@@ -1253,9 +1383,11 @@ function createPeriodicTable() {
                     }
 
                 }
+
             );
 
         }
+
     );
 
 
@@ -1265,9 +1397,7 @@ function createPeriodicTable() {
 
 
 
-    // ==================================================
     // ランタノイド
-    // ==================================================
 
     const lanthanideArea =
         document.createElement(
@@ -1301,6 +1431,7 @@ function createPeriodicTable() {
 
 
     lanthanides.forEach(
+
         atomicNumber => {
 
             lanthanideArea.appendChild(
@@ -1312,6 +1443,7 @@ function createPeriodicTable() {
             );
 
         }
+
     );
 
 
@@ -1321,9 +1453,7 @@ function createPeriodicTable() {
 
 
 
-    // ==================================================
     // アクチノイド
-    // ==================================================
 
     const actinideArea =
         document.createElement(
@@ -1357,6 +1487,7 @@ function createPeriodicTable() {
 
 
     actinides.forEach(
+
         atomicNumber => {
 
             actinideArea.appendChild(
@@ -1368,6 +1499,7 @@ function createPeriodicTable() {
             );
 
         }
+
     );
 
 
@@ -1478,8 +1610,6 @@ function selectElementFromPeriodicTable(
         ];
 
 
-    // 元素記号 → 元素名
-
     if (
         question.type ===
         "symbol-to-name"
@@ -1490,8 +1620,6 @@ function selectElementFromPeriodicTable(
 
     }
 
-
-    // 元素名 → 元素記号
 
     else if (
         question.type ===
@@ -1532,12 +1660,16 @@ function formatCorrectRate(
 
 
     const rate =
-        correct / attempts * 100;
+        correct /
+        attempts *
+        100;
 
 
     const rateText =
         rate
-            .toFixed(1)
+            .toFixed(
+                1
+            )
             .replace(
                 ".0",
                 ""
@@ -1635,10 +1767,6 @@ function createLearningElementItem(
 
 
 
-    // =========================
-    // カード上部
-    // =========================
-
     const header =
         document.createElement(
             "div"
@@ -1650,8 +1778,6 @@ function createLearningElementItem(
     );
 
 
-
-    // 原子番号
 
     const number =
         document.createElement(
@@ -1669,8 +1795,6 @@ function createLearningElementItem(
 
 
 
-    // 元素記号
-
     const symbol =
         document.createElement(
             "span"
@@ -1686,8 +1810,6 @@ function createLearningElementItem(
         elementRecord.symbol;
 
 
-
-    // 元素名
 
     const name =
         document.createElement(
@@ -1726,10 +1848,6 @@ function createLearningElementItem(
 
 
 
-    // =========================
-    // 成績部分
-    // =========================
-
     const stats =
         document.createElement(
             "div"
@@ -1741,8 +1859,6 @@ function createLearningElementItem(
     );
 
 
-
-    // 出題回数
 
     const attempts =
         document.createElement(
@@ -1760,8 +1876,6 @@ function createLearningElementItem(
 
 
 
-    // 正解回数
-
     const correct =
         document.createElement(
             "p"
@@ -1777,8 +1891,6 @@ function createLearningElementItem(
         `正解：${elementRecord.correct}回`;
 
 
-
-    // 不正解回数
 
     const incorrect =
         document.createElement(
@@ -1796,8 +1908,6 @@ function createLearningElementItem(
 
 
 
-    // 正解率
-
     const rate =
         document.createElement(
             "p"
@@ -1814,8 +1924,11 @@ function createLearningElementItem(
         `正解率：${
 
             formatCorrectRate(
+
                 elementRecord.correct,
+
                 elementRecord.attempts
+
             )
 
         }`;
@@ -1868,12 +1981,9 @@ function displayLearningRecord() {
 
 
 
-    // =========================
-    // 学習記録がまだない
-    // =========================
-
     if (
-        learningRecord.totalQuestions === 0
+        learningRecord.totalQuestions ===
+        0
     ) {
 
         learningRecordEmpty
@@ -1896,10 +2006,6 @@ function displayLearningRecord() {
 
 
 
-    // =========================
-    // 学習記録あり
-    // =========================
-
     learningRecordEmpty
         .classList
         .add(
@@ -1914,10 +2020,6 @@ function displayLearningRecord() {
         );
 
 
-
-    // =========================
-    // 全体の成績
-    // =========================
 
     learningTotalSessions.textContent =
         `${learningRecord.totalSessions}回`;
@@ -1956,11 +2058,6 @@ function displayLearningRecord() {
 
 
 
-    // =========================
-    // 元素ごとの成績
-    // 原子番号順に並べる
-    // =========================
-
     const elementRecords =
 
         Object.values(
@@ -1968,7 +2065,8 @@ function displayLearningRecord() {
         )
         .sort(
             (a, b) =>
-                a.number - b.number
+                a.number -
+                b.number
         );
 
 
@@ -2059,15 +2157,12 @@ function showQuestion() {
         ];
 
 
-    questionNumberElement
-        .textContent =
+    questionNumberElement.textContent =
 
         `第${currentQuestion + 1}問 / ${totalQuestions}問`;
 
 
-    questionElement
-        .textContent =
-
+    questionElement.textContent =
         question.question;
 
 
@@ -2110,9 +2205,6 @@ function showQuestion() {
 
 function checkAnswer() {
 
-
-    // 二重送信防止
-
     if (
         isAnswering
     ) {
@@ -2135,8 +2227,6 @@ function checkAnswer() {
 
 
 
-    // 空欄なら何もしない
-
     if (
         userAnswer === ""
     ) {
@@ -2146,11 +2236,6 @@ function checkAnswer() {
     }
 
 
-
-    // =========================
-    // 元素記号の場合
-    // 全角英字を半角へ
-    // =========================
 
     if (
         question.type ===
@@ -2163,6 +2248,7 @@ function checkAnswer() {
             );
 
     }
+
 
 
     isAnswering =
@@ -2182,20 +2268,12 @@ function checkAnswer() {
 
 
 
-    // =========================
-    // 正解かどうか
-    // =========================
-
     const isCorrect =
 
         userAnswer ===
         question.answer;
 
 
-
-    // =========================
-    // 正解
-    // =========================
 
     if (
         isCorrect
@@ -2209,11 +2287,6 @@ function checkAnswer() {
 
     }
 
-
-
-    // =========================
-    // 不正解
-    // =========================
 
     else {
 
@@ -2248,10 +2321,6 @@ function checkAnswer() {
 
 
 
-    // ==================================================
-    // localStorageへ1問分の学習記録を保存
-    // ==================================================
-
     recordLearningAnswer(
         question,
         isCorrect
@@ -2261,10 +2330,6 @@ function checkAnswer() {
     closePeriodicTable();
 
 
-
-    // =========================
-    // 1秒後に次へ
-    // =========================
 
     setTimeout(
 
@@ -2310,12 +2375,9 @@ function displayWrongAnswers() {
 
 
 
-    // =========================
-    // 全問正解
-    // =========================
-
     if (
-        wrongAnswers.length === 0
+        wrongAnswers.length ===
+        0
     ) {
 
         wrongAnswersArea
@@ -2345,10 +2407,6 @@ function displayWrongAnswers() {
 
 
 
-    // =========================
-    // 間違いあり
-    // =========================
-
     perfectScoreArea
         .classList
         .add(
@@ -2370,12 +2428,11 @@ function displayWrongAnswers() {
         );
 
 
+
     wrongAnswers.forEach(
 
         wrongAnswer => {
 
-
-            // カード
 
             const item =
                 document.createElement(
@@ -2389,8 +2446,6 @@ function displayWrongAnswers() {
 
 
 
-            // 問題番号
-
             const number =
                 document.createElement(
                     "p"
@@ -2403,7 +2458,6 @@ function displayWrongAnswers() {
 
 
             number.textContent =
-
                 `第${wrongAnswer.questionNumber}問`;
 
 
@@ -2412,8 +2466,6 @@ function displayWrongAnswers() {
             );
 
 
-
-            // 問題文
 
             const question =
                 document.createElement(
@@ -2435,8 +2487,6 @@ function displayWrongAnswers() {
             );
 
 
-
-            // 自分の答え
 
             const userAnswer =
                 document.createElement(
@@ -2466,8 +2516,6 @@ function displayWrongAnswers() {
 
 
 
-            // 正解
-
             const correctAnswer =
                 document.createElement(
                     "p"
@@ -2495,8 +2543,6 @@ function displayWrongAnswers() {
             );
 
 
-
-            // 元素情報
 
             const elementInfo =
                 document.createElement(
@@ -2550,11 +2596,6 @@ function displayWrongAnswers() {
 // ======================================================
 
 function showScore() {
-
-
-    // ==================================================
-    // テスト完了回数を保存
-    // ==================================================
 
     recordCompletedSession();
 
@@ -2640,15 +2681,121 @@ function resetResultDisplay() {
 
 
 // ======================================================
+// テスト開始前の共通処理
+// ======================================================
+
+function prepareQuizScreen() {
+
+    currentQuestion =
+        0;
+
+
+    score =
+        0;
+
+
+    wrongAnswers =
+        [];
+
+
+    isAnswering =
+        false;
+
+
+    resetResultDisplay();
+
+
+
+    settingsArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    scoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    learningRecordArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    quizArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+
+    if (
+        periodicTableMode ===
+        "enabled"
+    ) {
+
+        periodicTableButtonArea
+            .classList
+            .remove(
+                "hidden"
+            );
+
+    }
+
+
+    else {
+
+        periodicTableButtonArea
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        closePeriodicTable();
+
+    }
+
+}
+
+
+
+// ======================================================
+// 問題画面へスクロール
+// ======================================================
+
+function scrollToQuizArea() {
+
+    quizArea.scrollIntoView({
+
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+
+    });
+
+}
+
+
+
+// ======================================================
 // 通常テスト開始
 // ======================================================
 
 function startQuiz() {
 
+    currentQuizType =
+        "normal";
 
-    // =========================
-    // 問題数
-    // =========================
+
 
     const selectedCount =
         document.querySelector(
@@ -2658,11 +2805,6 @@ function startQuiz() {
         );
 
 
-
-    // =========================
-    // 問題形式
-    // =========================
-
     const selectedMode =
         document.querySelector(
 
@@ -2670,11 +2812,6 @@ function startQuiz() {
 
         );
 
-
-
-    // =========================
-    // 出題範囲
-    // =========================
 
     const selectedRange =
         document.querySelector(
@@ -2684,11 +2821,6 @@ function startQuiz() {
         );
 
 
-
-    // =========================
-    // 周期表使用設定
-    // =========================
-
     const selectedPeriodicTableMode =
         document.querySelector(
 
@@ -2697,10 +2829,6 @@ function startQuiz() {
         );
 
 
-
-    // =========================
-    // 選択内容を反映
-    // =========================
 
     totalQuestions =
         Number(
@@ -2721,142 +2849,143 @@ function startQuiz() {
 
 
 
-    // =========================
-    // 出題範囲を反映
-    // =========================
-
     setAvailableElements();
 
 
+    prepareQuizScreen();
 
-    // =========================
-    // テスト初期化
-    // =========================
-
-    currentQuestion =
-        0;
-
-
-    score =
-        0;
-
-
-    wrongAnswers =
-        [];
-
-
-    isAnswering =
-        false;
-
-
-    resetResultDisplay();
-
-
-
-    // =========================
-    // 画面切り替え
-    // =========================
-
-    settingsArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    scoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    learningRecordArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    quizArea
-        .classList
-        .remove(
-            "hidden"
-        );
-
-
-
-    // =========================
-    // 周期表ボタン
-    // =========================
-
-    if (
-        periodicTableMode ===
-        "enabled"
-    ) {
-
-        periodicTableButtonArea
-            .classList
-            .remove(
-                "hidden"
-            );
-
-    }
-
-
-    else {
-
-        periodicTableButtonArea
-            .classList
-            .add(
-                "hidden"
-            );
-
-
-        closePeriodicTable();
-
-    }
-
-
-
-    // =========================
-    // 問題作成
-    // =========================
 
     createQuestions();
 
 
-
-    // =========================
-    // 第1問を表示
-    // =========================
-
     showQuestion();
 
 
-    quizArea.scrollIntoView({
-
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-
-    });
+    scrollToQuizArea();
 
 }
 
 
 
 // ======================================================
-// 間違えた元素だけ再挑戦
+// 苦手元素テスト開始
+// ======================================================
+
+function startWeakElementsQuiz() {
+
+    const weakElements =
+        getWeakElements();
+
+
+
+    if (
+        weakElements.length ===
+        0
+    ) {
+
+        updateWeakElementsButtonState();
+
+        return;
+
+    }
+
+
+
+    currentQuizType =
+        "weak";
+
+
+
+    const selectedCount =
+        document.querySelector(
+
+            'input[name="questionCount"]:checked'
+
+        );
+
+
+    const selectedMode =
+        document.querySelector(
+
+            'input[name="quizMode"]:checked'
+
+        );
+
+
+    const selectedPeriodicTableMode =
+        document.querySelector(
+
+            'input[name="periodicTableMode"]:checked'
+
+        );
+
+
+
+    totalQuestions =
+        Number(
+            selectedCount.value
+        );
+
+
+    quizMode =
+        selectedMode.value;
+
+
+    periodicTableMode =
+        selectedPeriodicTableMode.value;
+
+
+
+    prepareQuizScreen();
+
+
+    createWeakElementsQuestions(
+        weakElements
+    );
+
+
+    showQuestion();
+
+
+    scrollToQuizArea();
+
+}
+
+
+
+// ======================================================
+// 同じ条件でもう一度挑戦
+// ======================================================
+
+function retrySameConditions() {
+
+    if (
+        currentQuizType ===
+        "weak"
+    ) {
+
+        startWeakElementsQuiz();
+
+        return;
+
+    }
+
+
+    startQuiz();
+
+}
+
+
+
+// ======================================================
+// 今回間違えた元素だけ再挑戦
 // ======================================================
 
 function startWrongRetry() {
 
-
     if (
-        wrongAnswers.length === 0
+        wrongAnswers.length ===
+        0
     ) {
 
         return;
@@ -2865,13 +2994,9 @@ function startWrongRetry() {
 
 
 
-    // =========================
-    // wrongAnswersを消す前に
-    // 再挑戦問題を作る
-    // =========================
-
     const retryQuestions =
         createWrongRetryQuestions();
+
 
 
     totalQuestions =
@@ -2883,10 +3008,6 @@ function startWrongRetry() {
 
 
 
-    // =========================
-    // 再挑戦を初期化
-    // =========================
-
     currentQuestion =
         0;
 
@@ -2903,13 +3024,10 @@ function startWrongRetry() {
         false;
 
 
+
     resetResultDisplay();
 
 
-
-    // =========================
-    // 画面切り替え
-    // =========================
 
     settingsArea
         .classList
@@ -2940,10 +3058,6 @@ function startWrongRetry() {
 
 
 
-    // =========================
-    // 周期表ボタン
-    // =========================
-
     if (
         periodicTableMode ===
         "enabled"
@@ -2973,22 +3087,10 @@ function startWrongRetry() {
 
 
 
-    // =========================
-    // 第1問を表示
-    // =========================
-
     showQuestion();
 
 
-    quizArea.scrollIntoView({
-
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-
-    });
+    scrollToQuizArea();
 
 }
 
@@ -3031,6 +3133,7 @@ function showSettings() {
         );
 
 
+
     answerInput.value =
         "";
 
@@ -3051,7 +3154,12 @@ function showSettings() {
         false;
 
 
+
     resetResultDisplay();
+
+
+    updateWeakElementsButtonState();
+
 
 
     settingsArea.scrollIntoView({
@@ -3073,9 +3181,7 @@ function showSettings() {
 // ======================================================
 
 
-// =========================
 // 答える
-// =========================
 
 answerButton.addEventListener(
 
@@ -3087,9 +3193,7 @@ answerButton.addEventListener(
 
 
 
-// =========================
 // Enterキー
-// =========================
 
 answerInput.addEventListener(
 
@@ -3112,9 +3216,7 @@ answerInput.addEventListener(
 
 
 
-// =========================
-// テスト開始
-// =========================
+// 通常テスト開始
 
 startButton.addEventListener(
 
@@ -3126,9 +3228,19 @@ startButton.addEventListener(
 
 
 
-// =========================
-// 間違えた元素だけ再挑戦
-// =========================
+// 苦手元素から出題
+
+weakElementsButton.addEventListener(
+
+    "click",
+
+    startWeakElementsQuiz
+
+);
+
+
+
+// 今回間違えた元素だけ再挑戦
 
 wrongRetryButton.addEventListener(
 
@@ -3140,23 +3252,19 @@ wrongRetryButton.addEventListener(
 
 
 
-// =========================
 // もう一度同じ条件で挑戦
-// =========================
 
 retryButton.addEventListener(
 
     "click",
 
-    startQuiz
+    retrySameConditions
 
 );
 
 
 
-// =========================
 // 設定を変える
-// =========================
 
 settingsButton.addEventListener(
 
@@ -3168,10 +3276,8 @@ settingsButton.addEventListener(
 
 
 
-// =========================
 // 学習記録を見る
 // 設定画面から
-// =========================
 
 learningRecordButton.addEventListener(
 
@@ -3183,10 +3289,8 @@ learningRecordButton.addEventListener(
 
 
 
-// =========================
 // 学習記録を見る
 // 結果画面から
-// =========================
 
 resultLearningRecordButton.addEventListener(
 
@@ -3198,9 +3302,7 @@ resultLearningRecordButton.addEventListener(
 
 
 
-// =========================
 // 学習記録から設定画面へ戻る
-// =========================
 
 learningRecordBackButton.addEventListener(
 
@@ -3212,9 +3314,7 @@ learningRecordBackButton.addEventListener(
 
 
 
-// ======================================================
 // 周期表を開く
-// ======================================================
 
 periodicTableButton.addEventListener(
 
@@ -3226,9 +3326,7 @@ periodicTableButton.addEventListener(
 
 
 
-// ======================================================
-// 右上の × で閉じる
-// ======================================================
+// 右上の×で閉じる
 
 periodicTableCloseButton.addEventListener(
 
@@ -3246,9 +3344,7 @@ periodicTableCloseButton.addEventListener(
 
 
 
-// ======================================================
 // 下のボタンで閉じる
-// ======================================================
 
 periodicTableBottomCloseButton.addEventListener(
 
@@ -3266,9 +3362,7 @@ periodicTableBottomCloseButton.addEventListener(
 
 
 
-// ======================================================
-// 暗い背景部分をクリックして閉じる
-// ======================================================
+// 暗い背景をクリックして閉じる
 
 periodicTableModal.addEventListener(
 
@@ -3293,9 +3387,7 @@ periodicTableModal.addEventListener(
 
 
 
-// ======================================================
 // Escキーで閉じる
-// ======================================================
 
 document.addEventListener(
 
@@ -3304,14 +3396,18 @@ document.addEventListener(
     function (event) {
 
         if (
+
             event.key ===
             "Escape"
+
             &&
+
             !periodicTableModal
                 .classList
                 .contains(
                     "hidden"
                 )
+
         ) {
 
             closePeriodicTable(
@@ -3323,3 +3419,11 @@ document.addEventListener(
     }
 
 );
+
+
+
+// ======================================================
+// 初期表示
+// ======================================================
+
+updateWeakElementsButtonState();

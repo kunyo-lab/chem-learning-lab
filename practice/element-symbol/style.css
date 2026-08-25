@@ -160,6 +160,59 @@ h1 {
 
 
 /* =========================
+   苦手元素から出題
+========================= */
+
+.weak-elements-button-area {
+    margin-top: 10px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #dddddd;
+}
+
+
+#weak-elements-button {
+    background-color: #fff7e8;
+
+    border: 1px solid #d6a04a;
+
+    border-radius: 6px;
+
+    font-weight: bold;
+}
+
+
+#weak-elements-button:hover {
+    background-color: #ffedc7;
+}
+
+
+#weak-elements-button:disabled {
+    background-color: #eeeeee;
+
+    border-color: #cccccc;
+
+    color: #888888;
+
+    cursor: not-allowed;
+}
+
+
+.weak-elements-message {
+    margin-top: 12px;
+    margin-bottom: 0;
+
+    color: #a35b00;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+
+/* =========================
    学習記録を見るボタン
 ========================= */
 
