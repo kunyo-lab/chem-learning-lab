@@ -29,11 +29,20 @@ let currentQuestion = 0;
 let score = 0;
 
 
+// =========================
+// 間違えた問題
+// =========================
+
+let wrongAnswers = [];
+
+
 // 解答処理中の二重送信防止
+
 let isAnswering = false;
 
 
 // 周期表をすでに作ったかどうか
+
 let periodicTableCreated = false;
 
 
@@ -103,6 +112,29 @@ const scoreArea =
 const scoreElement =
     document.getElementById(
         "score"
+    );
+
+
+
+// =========================
+// 間違えた問題関係
+// =========================
+
+const wrongAnswersArea =
+    document.getElementById(
+        "wrong-answers-area"
+    );
+
+
+const wrongAnswersList =
+    document.getElementById(
+        "wrong-answers-list"
+    );
+
+
+const perfectScoreArea =
+    document.getElementById(
+        "perfect-score-area"
     );
 
 
@@ -322,7 +354,10 @@ function createQuestions() {
                             `${element.symbol} の元素名は？`,
 
                         answer:
-                            element.name
+                            element.name,
+
+                        element:
+                            element
 
                     };
 
@@ -348,7 +383,10 @@ function createQuestions() {
                             `${element.name} の元素記号は？`,
 
                         answer:
-                            element.symbol
+                            element.symbol,
+
+                        element:
+                            element
 
                     };
 
@@ -380,7 +418,10 @@ function createQuestions() {
                                 `${element.symbol} の元素名は？`,
 
                             answer:
-                                element.name
+                                element.name,
+
+                            element:
+                                element
 
                         };
 
@@ -401,7 +442,10 @@ function createQuestions() {
                                 `${element.name} の元素記号は？`,
 
                             answer:
-                                element.symbol
+                                element.symbol,
+
+                            element:
+                                element
 
                         };
 
@@ -952,9 +996,6 @@ function createPeriodicTable() {
 function openPeriodicTable() {
 
 
-    // 周期表が使用不可なら
-    // 何もしない
-
     if (
         periodicTableMode !==
         "enabled"
@@ -964,8 +1005,6 @@ function openPeriodicTable() {
 
     }
 
-
-    // 初回だけ周期表を作る
 
     if (
         !periodicTableCreated
@@ -989,9 +1028,6 @@ function openPeriodicTable() {
             "modal-open"
         );
 
-
-    // キーボード操作時に
-    // 閉じるボタンへフォーカス
 
     periodicTableCloseButton
         .focus();
@@ -1084,13 +1120,8 @@ function selectElementFromPeriodicTable(
 
 
 
-    // 選択しただけでは
-    // 正誤判定しない
-
     closePeriodicTable();
 
-
-    // 解答欄へ戻す
 
     answerInput.focus();
 
@@ -1146,9 +1177,6 @@ function showQuestion() {
     periodicTableButton.disabled =
         false;
 
-
-    // 新しい問題では
-    // 周期表を閉じる
 
     closePeriodicTable();
 
@@ -1263,15 +1291,42 @@ function checkAnswer() {
 
     else {
 
+
         resultElement.textContent =
 
             `不正解　正解は「${question.answer}」`;
 
+
+
+        // =========================
+        // 間違えた問題を保存
+        // =========================
+
+        wrongAnswers.push({
+
+            questionNumber:
+                currentQuestion + 1,
+
+            question:
+                question.question,
+
+            userAnswer:
+                userAnswer,
+
+            correctAnswer:
+                question.answer,
+
+            type:
+                question.type,
+
+            element:
+                question.element
+
+        });
+
     }
 
 
-
-    // 周期表が開いていた場合は閉じる
 
     closePeriodicTable();
 
@@ -1314,6 +1369,259 @@ function checkAnswer() {
 
 
 // ======================================================
+// 間違えた問題を表示
+// ======================================================
+
+function displayWrongAnswers() {
+
+
+    // 以前の表示を消す
+
+    wrongAnswersList.innerHTML =
+        "";
+
+
+
+    // =========================
+    // 全問正解
+    // =========================
+
+    if (
+        wrongAnswers.length === 0
+    ) {
+
+
+        wrongAnswersArea
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        perfectScoreArea
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 間違いあり
+    // =========================
+
+    perfectScoreArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    wrongAnswersArea
+        .classList
+        .remove(
+            "hidden"
+        );
+
+
+
+    wrongAnswers.forEach(
+        wrongAnswer => {
+
+
+            // =========================
+            // カードを作る
+            // =========================
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.classList.add(
+                "wrong-answer-item"
+            );
+
+
+
+            // =========================
+            // 問題番号
+            // =========================
+
+            const number =
+                document.createElement(
+                    "p"
+                );
+
+
+            number.classList.add(
+                "wrong-answer-number"
+            );
+
+
+            number.textContent =
+
+                `第${wrongAnswer.questionNumber}問`;
+
+
+            item.appendChild(
+                number
+            );
+
+
+
+            // =========================
+            // 問題文
+            // =========================
+
+            const question =
+                document.createElement(
+                    "p"
+                );
+
+
+            question.classList.add(
+                "wrong-answer-question"
+            );
+
+
+            question.textContent =
+
+                wrongAnswer.question;
+
+
+            item.appendChild(
+                question
+            );
+
+
+
+            // =========================
+            // 自分の答え
+            // =========================
+
+            const userAnswer =
+                document.createElement(
+                    "p"
+                );
+
+
+            userAnswer.classList.add(
+                "wrong-answer-detail"
+            );
+
+
+            userAnswer.innerHTML = `
+
+                <span class="wrong-answer-label">
+                    あなたの答え：
+                </span>
+
+                ${wrongAnswer.userAnswer}
+
+            `;
+
+
+            item.appendChild(
+                userAnswer
+            );
+
+
+
+            // =========================
+            // 正解
+            // =========================
+
+            const correctAnswer =
+                document.createElement(
+                    "p"
+                );
+
+
+            correctAnswer.classList.add(
+                "wrong-answer-detail"
+            );
+
+
+            correctAnswer.innerHTML = `
+
+                <span class="wrong-answer-label">
+                    正解：
+                </span>
+
+                ${wrongAnswer.correctAnswer}
+
+            `;
+
+
+            item.appendChild(
+                correctAnswer
+            );
+
+
+
+            // =========================
+            // 元素情報
+            // =========================
+
+            const elementInfo =
+                document.createElement(
+                    "p"
+                );
+
+
+            elementInfo.classList.add(
+                "wrong-answer-detail"
+            );
+
+
+            elementInfo.innerHTML = `
+
+                <span class="wrong-answer-label">
+                    元素：
+                </span>
+
+                原子番号
+                ${wrongAnswer.element.number}
+
+                ／
+                ${wrongAnswer.element.symbol}
+
+                ／
+                ${wrongAnswer.element.name}
+
+            `;
+
+
+            item.appendChild(
+                elementInfo
+            );
+
+
+
+            // =========================
+            // 一覧へ追加
+            // =========================
+
+            wrongAnswersList
+                .appendChild(
+                    item
+                );
+
+        }
+    );
+
+}
+
+
+
+// ======================================================
 // 結果を表示
 // ======================================================
 
@@ -1340,6 +1648,26 @@ function showScore() {
     scoreElement.textContent =
 
         `${score} / ${totalQuestions} 点`;
+
+
+
+    // =========================
+    // 間違えた問題を表示
+    // =========================
+
+    displayWrongAnswers();
+
+
+
+    scoreArea.scrollIntoView({
+
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+
+    });
 
 }
 
@@ -1447,8 +1775,35 @@ function startQuiz() {
         0;
 
 
+    wrongAnswers =
+        [];
+
+
     isAnswering =
         false;
+
+
+
+    // =========================
+    // 前回の結果表示を初期化
+    // =========================
+
+    wrongAnswersList.innerHTML =
+        "";
+
+
+    wrongAnswersArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    perfectScoreArea
+        .classList
+        .add(
+            "hidden"
+        );
 
 
 
@@ -1516,6 +1871,7 @@ function startQuiz() {
     // =========================
 
     createQuestions();
+
 
 
     // =========================
@@ -1589,6 +1945,29 @@ function showSettings() {
 
     isAnswering =
         false;
+
+
+
+    // =========================
+    // 結果表示を初期化
+    // =========================
+
+    wrongAnswersList.innerHTML =
+        "";
+
+
+    wrongAnswersArea
+        .classList
+        .add(
+            "hidden"
+        );
+
+
+    perfectScoreArea
+        .classList
+        .add(
+            "hidden"
+        );
 
 
 

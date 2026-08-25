@@ -245,8 +245,134 @@ button {
 }
 
 
-/* =========================
+/* =================================================
    結果画面
+================================================= */
+
+#score-area h2 {
+    margin-bottom: 15px;
+}
+
+
+#score {
+    margin: 15px 0 30px;
+
+    font-size: 28px;
+    font-weight: bold;
+}
+
+
+/* =========================
+   間違えた問題
+========================= */
+
+.wrong-answers-area {
+    margin-top: 30px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #dddddd;
+
+    text-align: left;
+}
+
+
+.wrong-answers-area h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+
+    text-align: center;
+
+    font-size: 22px;
+}
+
+
+/* =========================
+   間違えた問題のカード
+========================= */
+
+.wrong-answer-item {
+    margin-bottom: 18px;
+
+    padding: 18px;
+
+    background-color: #f8f9fb;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+
+/* 問題番号 */
+
+.wrong-answer-number {
+    margin-top: 0;
+    margin-bottom: 10px;
+
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+/* 問題文 */
+
+.wrong-answer-question {
+    margin: 8px 0 15px;
+
+    font-weight: bold;
+}
+
+
+/* 自分の答え・正解 */
+
+.wrong-answer-detail {
+    margin: 7px 0;
+
+    line-height: 1.6;
+}
+
+
+/* 「あなたの答え」「正解」など */
+
+.wrong-answer-label {
+    font-weight: bold;
+}
+
+
+/* =========================
+   全問正解
+========================= */
+
+.perfect-score-area {
+    margin: 25px 0;
+
+    padding: 20px;
+
+    background-color: #f5fbf6;
+
+    border: 1px solid #cfded1;
+
+    border-radius: 10px;
+}
+
+
+.perfect-score-area p {
+    margin: 8px 0;
+}
+
+
+.perfect-score-area p:first-child {
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+/* =========================
+   結果画面ボタン
 ========================= */
 
 .result-buttons {
@@ -257,6 +383,8 @@ button {
     gap: 15px;
 
     flex-wrap: wrap;
+
+    margin-top: 30px;
 }
 
 
@@ -661,6 +789,25 @@ button {
 
     #answer {
         width: 90%;
+    }
+
+
+    /* =========================
+       結果画面
+    ========================= */
+
+    #score {
+        font-size: 24px;
+    }
+
+
+    .wrong-answer-item {
+        padding: 15px;
+    }
+
+
+    .wrong-answer-number {
+        font-size: 17px;
     }
 
 
