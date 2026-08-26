@@ -160,7 +160,7 @@ h1 {
 
 
 /* =========================
-   苦手元素から出題
+   復習・苦手元素から出題
 ========================= */
 
 .weak-elements-button-area {
@@ -809,7 +809,77 @@ button {
     font-weight: bold;
 }
 
+/* =================================================
+   元素の学習状態
+================================================= */
 
+.learning-element-status {
+    display: inline-block;
+
+    margin-top: 10px;
+
+    padding: 5px 10px;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    line-height: 1.5;
+}
+
+
+/* =========================
+   通常
+========================= */
+
+.learning-status-normal {
+    background-color: #eef8f0;
+
+    border: 1px solid #9bc7a3;
+
+    color: #2f6b39;
+}
+
+
+/* =========================
+   復習対象
+========================= */
+
+.learning-status-review {
+    background-color: #eef5ff;
+
+    border: 1px solid #9ab9e8;
+
+    color: #315f9d;
+}
+
+
+/* =========================
+   苦手元素
+========================= */
+
+.learning-status-weak {
+    background-color: #fff2e8;
+
+    border: 1px solid #e1a46b;
+
+    color: #a34f10;
+}
+
+
+/* =========================
+   苦手卒業
+========================= */
+
+.learning-status-graduated {
+    background-color: #f2f8ed;
+
+    border: 1px solid #9fc285;
+
+    color: #49752e;
+}
 
 /* =================================================
    学習記録画面ボタン

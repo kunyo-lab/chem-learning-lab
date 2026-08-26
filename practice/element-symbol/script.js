@@ -2323,34 +2323,104 @@ function createLearningElementItem(
 
 
 
-    // =========================
-    // 現在の状態
-    // =========================
+// =========================
+// 現在の状態
+// =========================
 
-    const status =
-        document.createElement(
-            "p"
-        );
+// 元素の現在の学習状態を取得
 
-
-    status.classList.add(
-        "learning-element-stat"
+const learningStatus =
+    getElementLearningStatus(
+        elementRecord
     );
 
 
-    status.style.fontWeight =
-        "bold";
+// 状態表示用の要素を作る
+
+const status =
+    document.createElement(
+        "p"
+    );
 
 
-    status.textContent =
+// 共通クラス
 
-        `状態：${
+status.classList.add(
+    "learning-element-status"
+);
 
-            getElementLearningStatusText(
-                elementRecord
-            )
 
-        }`;
+// =========================
+// 通常
+// =========================
+
+if (
+    learningStatus ===
+    "normal"
+) {
+
+    status.classList.add(
+        "learning-status-normal"
+    );
+
+}
+
+
+// =========================
+// 復習対象
+// =========================
+
+else if (
+    learningStatus ===
+    "review"
+) {
+
+    status.classList.add(
+        "learning-status-review"
+    );
+
+}
+
+
+// =========================
+// 苦手元素
+// =========================
+
+else if (
+    learningStatus ===
+    "weak"
+) {
+
+    status.classList.add(
+        "learning-status-weak"
+    );
+
+}
+
+
+// =========================
+// 苦手卒業
+// =========================
+
+else if (
+    learningStatus ===
+    "graduated"
+) {
+
+    status.classList.add(
+        "learning-status-graduated"
+    );
+
+}
+
+
+// 表示文字
+
+status.textContent =
+
+    getElementLearningStatusText(
+        elementRecord
+    );
 
 
 
