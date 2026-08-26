@@ -620,6 +620,156 @@ button {
 
 
 /* =================================================
+   現在の学習状態
+================================================= */
+
+.learning-status-summary {
+    margin-top: 30px;
+
+    padding-top: 25px;
+
+    border-top: 1px solid #dddddd;
+}
+
+
+.learning-status-summary h3 {
+    margin-top: 0;
+
+    margin-bottom: 8px;
+}
+
+
+.learning-status-summary-note {
+    margin-top: 0;
+
+    margin-bottom: 18px;
+
+    color: #666666;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+
+/* =========================
+   学習状態カード一覧
+========================= */
+
+.learning-status-summary-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 10px;
+}
+
+
+
+/* =========================
+   学習状態カード
+========================= */
+
+.learning-status-summary-item {
+    min-height: 100px;
+
+    padding: 14px 8px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+
+.learning-status-summary-label {
+    margin-bottom: 10px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    line-height: 1.5;
+}
+
+
+.learning-status-summary-value {
+    font-size: 24px;
+
+    font-weight: bold;
+}
+
+
+
+/* =========================
+   苦手元素
+========================= */
+
+.learning-status-summary-weak {
+    background-color: #fff2e8;
+
+    border: 1px solid #e1a46b;
+
+    color: #a34f10;
+}
+
+
+
+/* =========================
+   復習対象
+========================= */
+
+.learning-status-summary-review {
+    background-color: #eef5ff;
+
+    border: 1px solid #9ab9e8;
+
+    color: #315f9d;
+}
+
+
+
+/* =========================
+   苦手卒業
+========================= */
+
+.learning-status-summary-graduated {
+    background-color: #f2f8ed;
+
+    border: 1px solid #9fc285;
+
+    color: #49752e;
+}
+
+
+
+/* =========================
+   通常
+========================= */
+
+.learning-status-summary-normal {
+    background-color: #eef8f0;
+
+    border: 1px solid #9bc7a3;
+
+    color: #2f6b39;
+}
+
+
+
+/* =================================================
    最終学習
 ================================================= */
 
@@ -1588,6 +1738,37 @@ button {
 
     .learning-summary-value {
         font-size: 20px;
+    }
+
+
+
+    /* =========================
+       学習状態の集計
+    ========================= */
+
+    .learning-status-summary-list {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+
+    .learning-status-summary-item {
+        min-height: 90px;
+
+        padding: 12px 6px;
+    }
+
+
+    .learning-status-summary-label {
+        font-size: 12px;
+    }
+
+
+    .learning-status-summary-value {
+        font-size: 22px;
     }
 
 

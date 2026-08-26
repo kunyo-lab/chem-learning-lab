@@ -436,12 +436,6 @@
                 </h3>
 
 
-                <!--
-                    JavaScriptで
-                    間違えた問題を
-                    この中に表示します
-                -->
-
                 <div id="wrong-answers-list"></div>
 
             </div>
@@ -586,7 +580,6 @@
                     </h3>
 
 
-
                     <div class="learning-summary-list">
 
 
@@ -672,6 +665,135 @@
                             </span>
 
                         </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ==================================================
+                     学習状態の集計
+                =================================================== -->
+
+                <div class="learning-status-summary">
+
+                    <h3>
+                        現在の学習状態
+                    </h3>
+
+
+                    <p class="learning-status-summary-note">
+                        これまでに出題された元素を、
+                        現在の学習状態ごとに集計しています。
+                    </p>
+
+
+                    <div class="learning-status-summary-list">
+
+
+                        <!-- =========================
+                             苦手元素
+                        ========================== -->
+
+                        <div
+                            class="
+                                learning-status-summary-item
+                                learning-status-summary-weak
+                            "
+                        >
+
+                            <span class="learning-status-summary-label">
+                                ⚠️ 苦手元素
+                            </span>
+
+                            <span
+                                id="learning-status-weak-count"
+                                class="learning-status-summary-value"
+                            >
+                                0個
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- =========================
+                             復習対象
+                        ========================== -->
+
+                        <div
+                            class="
+                                learning-status-summary-item
+                                learning-status-summary-review
+                            "
+                        >
+
+                            <span class="learning-status-summary-label">
+                                🔄 復習対象
+                            </span>
+
+                            <span
+                                id="learning-status-review-count"
+                                class="learning-status-summary-value"
+                            >
+                                0個
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- =========================
+                             苦手卒業
+                        ========================== -->
+
+                        <div
+                            class="
+                                learning-status-summary-item
+                                learning-status-summary-graduated
+                            "
+                        >
+
+                            <span class="learning-status-summary-label">
+                                🎓 苦手卒業
+                            </span>
+
+                            <span
+                                id="learning-status-graduated-count"
+                                class="learning-status-summary-value"
+                            >
+                                0個
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- =========================
+                             通常
+                        ========================== -->
+
+                        <div
+                            class="
+                                learning-status-summary-item
+                                learning-status-summary-normal
+                            "
+                        >
+
+                            <span class="learning-status-summary-label">
+                                ✅ 通常
+                            </span>
+
+                            <span
+                                id="learning-status-normal-count"
+                                class="learning-status-summary-value"
+                            >
+                                0個
+                            </span>
+
+                        </div>
+
 
                     </div>
 
@@ -849,8 +971,6 @@
     >
 
 
-        <!-- モーダル本体 -->
-
         <div class="periodic-table-modal-content">
 
 
@@ -895,11 +1015,6 @@
             ========================== -->
 
             <div class="periodic-table-scroll">
-
-                <!--
-                    JavaScriptで
-                    この中に周期表を作ります
-                -->
 
                 <div id="periodic-table"></div>
 
