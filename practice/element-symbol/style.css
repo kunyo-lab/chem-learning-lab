@@ -809,6 +809,8 @@ button {
     font-weight: bold;
 }
 
+
+
 /* =================================================
    元素の学習状態
 ================================================= */
@@ -830,6 +832,7 @@ button {
 }
 
 
+
 /* =========================
    通常
 ========================= */
@@ -841,6 +844,7 @@ button {
 
     color: #2f6b39;
 }
+
 
 
 /* =========================
@@ -856,6 +860,7 @@ button {
 }
 
 
+
 /* =========================
    苦手元素
 ========================= */
@@ -867,6 +872,7 @@ button {
 
     color: #a34f10;
 }
+
 
 
 /* =========================
@@ -881,11 +887,23 @@ button {
     color: #49752e;
 }
 
+
+
 /* =================================================
    学習記録画面ボタン
 ================================================= */
 
 .learning-record-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+
     margin-top: 30px;
 
     padding-top: 20px;
@@ -896,6 +914,31 @@ button {
 
 #learning-record-back-button {
     font-weight: bold;
+}
+
+
+
+/* =========================
+   学習記録リセットボタン
+========================= */
+
+#learning-record-reset-button {
+    background-color: #fff1f1;
+
+    border: 1px solid #d88787;
+
+    border-radius: 6px;
+
+    color: #a32828;
+
+    font-weight: bold;
+}
+
+
+#learning-record-reset-button:hover {
+    background-color: #ffe1e1;
+
+    border-color: #c15f5f;
 }
 
 
@@ -1394,9 +1437,11 @@ button {
 
 
     .learning-record-buttons {
-        display: flex;
+        flex-direction: column;
 
-        justify-content: center;
+        align-items: center;
+
+        gap: 5px;
     }
 
 

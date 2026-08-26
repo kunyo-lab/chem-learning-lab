@@ -1,6 +1,6 @@
 // ======================================================
 // 高校化学学習ラボ
-// 元素記号テスト v0.3.3
+// 元素記号テスト v0.3.4
 // ======================================================
 
 
@@ -24,7 +24,7 @@ let periodicTableMode = "disabled";
 
 
 // normal : 通常テスト
-// weak   : 苦手・復習テスト
+// weak   : 復習・苦手元素テスト
 
 let currentQuizType = "normal";
 
@@ -161,9 +161,6 @@ function loadLearningRecord() {
 
         // ==================================================
         // 旧バージョンの学習記録との互換性
-        //
-        // v0.3.2以前には correctStreak がないため、
-        // 存在しない場合は0として扱う
         // ==================================================
 
         Object.values(
@@ -239,6 +236,125 @@ function saveLearningRecord(
         );
 
     }
+
+}
+
+
+
+// ======================================================
+// 学習記録をリセットする
+// ======================================================
+
+function resetLearningRecord() {
+
+    const learningRecord =
+        loadLearningRecord();
+
+
+    // =========================
+    // 記録がない場合
+    // =========================
+
+    if (
+        learningRecord.totalQuestions === 0
+    ) {
+
+        alert(
+            "削除する学習記録はありません。"
+        );
+
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 削除確認
+    // =========================
+
+    const confirmed =
+        window.confirm(
+
+            "本当に学習記録をリセットしますか？\n\n" +
+
+            "挑戦回数、正解数、不正解数、正解率、" +
+
+            "元素ごとの記録、復習・苦手元素の情報がすべて削除されます。\n\n" +
+
+            "この操作は元に戻せません。"
+
+        );
+
+
+    // キャンセル
+
+    if (
+        !confirmed
+    ) {
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // localStorageから削除
+    // =========================
+
+    try {
+
+        localStorage.removeItem(
+            learningRecordKey
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "学習記録の削除に失敗しました。",
+            error
+        );
+
+
+        alert(
+            "学習記録の削除に失敗しました。"
+        );
+
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 学習記録画面を更新
+    // =========================
+
+    displayLearningRecord();
+
+
+
+    // =========================
+    // 復習・苦手元素ボタン更新
+    // =========================
+
+    updateWeakElementsButtonState();
+
+
+
+    // =========================
+    // 完了表示
+    // =========================
+
+    alert(
+        "学習記録をリセットしました。"
+    );
 
 }
 
@@ -365,9 +481,6 @@ function recordLearningAnswer(
 
         elementRecord.correct++;
 
-
-        // 連続正解を1増やす
-
         elementRecord.correctStreak++;
 
     }
@@ -380,9 +493,6 @@ function recordLearningAnswer(
     else {
 
         elementRecord.incorrect++;
-
-
-        // 間違えたら連続正解をリセット
 
         elementRecord.correctStreak =
             0;
@@ -556,7 +666,7 @@ const settingsButton =
 
 
 // ======================================================
-// 苦手元素から出題
+// 復習・苦手元素から出題
 // ======================================================
 
 const weakElementsButton =
@@ -654,6 +764,16 @@ const learningRecordBackButton =
     );
 
 
+// =========================
+// 学習記録リセット
+// =========================
+
+const learningRecordResetButton =
+    document.getElementById(
+        "learning-record-reset-button"
+    );
+
+
 
 // ======================================================
 // 周期表関係
@@ -744,8 +864,6 @@ function shuffle(array) {
 function setAvailableElements() {
 
 
-    // 原子番号1〜20
-
     if (
         quizRange === "1-20"
     ) {
@@ -759,8 +877,6 @@ function setAvailableElements() {
     }
 
 
-    // 原子番号1〜36
-
     else if (
         quizRange === "1-36"
     ) {
@@ -773,8 +889,6 @@ function setAvailableElements() {
 
     }
 
-
-    // 高校化学重要元素
 
     else if (
         quizRange === "important"
@@ -790,8 +904,6 @@ function setAvailableElements() {
 
     }
 
-
-    // 原子番号1〜118
 
     else if (
         quizRange === "all"
@@ -839,9 +951,7 @@ function getElementLearningStatus(
 
 
 
-    // =========================
     // 一度も間違えていない
-    // =========================
 
     if (
         incorrect === 0
@@ -853,9 +963,7 @@ function getElementLearningStatus(
 
 
 
-    // =========================
     // 3回連続正解で苦手卒業
-    // =========================
 
     if (
         correctStreak >=
@@ -868,9 +976,7 @@ function getElementLearningStatus(
 
 
 
-    // =========================
     // 正解率
-    // =========================
 
     let correctRate =
         0;
@@ -888,13 +994,7 @@ function getElementLearningStatus(
 
 
 
-    // =========================
     // 苦手元素
-    //
-    // ・3回以上出題
-    // ・2回以上不正解
-    // ・正解率80%未満
-    // =========================
 
     if (
 
@@ -919,10 +1019,7 @@ function getElementLearningStatus(
 
 
 
-    // =========================
-    // 間違いはあるが
-    // 苦手と断定する段階ではない
-    // =========================
+    // 復習対象
 
     return "review";
 
@@ -978,7 +1075,7 @@ function getElementLearningStatusText(
 
 
 // ======================================================
-// 苦手・復習対象の元素を取得する
+// 復習・苦手対象の元素を取得する
 // ======================================================
 
 function getWeakStudyElements() {
@@ -1033,7 +1130,7 @@ function getWeakStudyElements() {
 
 
 // ======================================================
-// 苦手元素ボタンの状態を更新する
+// 復習・苦手元素ボタンの状態を更新する
 // ======================================================
 
 function updateWeakElementsButtonState() {
@@ -1093,8 +1190,6 @@ function createQuestion(
     type
 ) {
 
-    // 元素記号 → 元素名
-
     if (
         type ===
         "symbol-to-name"
@@ -1118,8 +1213,6 @@ function createQuestion(
 
     }
 
-
-    // 元素名 → 元素記号
 
     return {
 
@@ -1154,8 +1247,6 @@ function createQuestionsFromElements(
             (element, index) => {
 
 
-                // 元素記号 → 元素名
-
                 if (
                     quizMode ===
                     "symbol-to-name"
@@ -1168,9 +1259,6 @@ function createQuestionsFromElements(
 
                 }
 
-
-
-                // 元素名 → 元素記号
 
                 if (
                     quizMode ===
@@ -1185,9 +1273,6 @@ function createQuestionsFromElements(
                 }
 
 
-
-                // ミックス前半
-
                 if (
                     index <
                     totalQuestions / 2
@@ -1200,9 +1285,6 @@ function createQuestionsFromElements(
 
                 }
 
-
-
-                // ミックス後半
 
                 return createQuestion(
                     element,
@@ -1248,7 +1330,7 @@ function createQuestions() {
 
 
 // ======================================================
-// 苦手・復習元素テストの問題を作る
+// 復習・苦手元素テストの問題を作る
 // ======================================================
 
 function createWeakElementsQuestions(
@@ -1258,8 +1340,6 @@ function createWeakElementsQuestions(
     const selectedElements =
         [];
 
-
-    // 対象元素が問題数以上ある場合
 
     if (
         targetElements.length >=
@@ -1280,9 +1360,6 @@ function createWeakElementsQuestions(
 
     }
 
-
-    // 対象元素が問題数より少ない場合
-    // 繰り返し出題する
 
     else {
 
@@ -1387,9 +1464,6 @@ function normalizeSymbol(text) {
 
 const periodicTableLayout = [
 
-
-    // 第1周期
-
     [
         1,
 
@@ -1403,9 +1477,6 @@ const periodicTableLayout = [
         2
     ],
 
-
-    // 第2周期
-
     [
         3, 4,
 
@@ -1416,9 +1487,6 @@ const periodicTableLayout = [
 
         5, 6, 7, 8, 9, 10
     ],
-
-
-    // 第3周期
 
     [
         11, 12,
@@ -1432,9 +1500,6 @@ const periodicTableLayout = [
         16, 17, 18
     ],
 
-
-    // 第4周期
-
     [
         19, 20, 21,
         22, 23, 24,
@@ -1444,9 +1509,6 @@ const periodicTableLayout = [
         34, 35, 36
     ],
 
-
-    // 第5周期
-
     [
         37, 38, 39,
         40, 41, 42,
@@ -1455,9 +1517,6 @@ const periodicTableLayout = [
         49, 50, 51,
         52, 53, 54
     ],
-
-
-    // 第6周期
 
     [
         55,
@@ -1471,9 +1530,6 @@ const periodicTableLayout = [
         81, 82, 83,
         84, 85, 86
     ],
-
-
-    // 第7周期
 
     [
         87,
@@ -1623,8 +1679,6 @@ function createPeriodicTable() {
                 item => {
 
 
-                    // 空白
-
                     if (
                         item === null
                     ) {
@@ -1646,8 +1700,6 @@ function createPeriodicTable() {
 
                     }
 
-
-                    // ランタノイド
 
                     else if (
                         item ===
@@ -1676,8 +1728,6 @@ function createPeriodicTable() {
                     }
 
 
-                    // アクチノイド
-
                     else if (
                         item ===
                         "actinide"
@@ -1704,8 +1754,6 @@ function createPeriodicTable() {
 
                     }
 
-
-                    // 通常元素
 
                     else {
 
@@ -1734,9 +1782,7 @@ function createPeriodicTable() {
 
 
 
-    // ==================================================
     // ランタノイド
-    // ==================================================
 
     const lanthanideArea =
         document.createElement(
@@ -1792,9 +1838,7 @@ function createPeriodicTable() {
 
 
 
-    // ==================================================
     // アクチノイド
-    // ==================================================
 
     const actinideArea =
         document.createElement(
@@ -2124,8 +2168,6 @@ function createLearningElementItem(
 
 
 
-    // 原子番号
-
     const number =
         document.createElement(
             "span"
@@ -2142,8 +2184,6 @@ function createLearningElementItem(
 
 
 
-    // 元素記号
-
     const symbol =
         document.createElement(
             "span"
@@ -2159,8 +2199,6 @@ function createLearningElementItem(
         elementRecord.symbol;
 
 
-
-    // 元素名
 
     const name =
         document.createElement(
@@ -2215,8 +2253,6 @@ function createLearningElementItem(
 
 
 
-    // 出題回数
-
     const attempts =
         document.createElement(
             "p"
@@ -2232,8 +2268,6 @@ function createLearningElementItem(
         `出題：${elementRecord.attempts}回`;
 
 
-
-    // 正解回数
 
     const correct =
         document.createElement(
@@ -2251,8 +2285,6 @@ function createLearningElementItem(
 
 
 
-    // 不正解回数
-
     const incorrect =
         document.createElement(
             "p"
@@ -2268,8 +2300,6 @@ function createLearningElementItem(
         `不正解：${elementRecord.incorrect}回`;
 
 
-
-    // 連続正解
 
     const streak =
         document.createElement(
@@ -2293,8 +2323,6 @@ function createLearningElementItem(
         }回`;
 
 
-
-    // 正解率
 
     const rate =
         document.createElement(
@@ -2323,104 +2351,81 @@ function createLearningElementItem(
 
 
 
-// =========================
-// 現在の状態
-// =========================
+    // ==================================================
+    // 現在の学習状態
+    // ==================================================
 
-// 元素の現在の学習状態を取得
-
-const learningStatus =
-    getElementLearningStatus(
-        elementRecord
-    );
+    const learningStatus =
+        getElementLearningStatus(
+            elementRecord
+        );
 
 
-// 状態表示用の要素を作る
+    const status =
+        document.createElement(
+            "p"
+        );
 
-const status =
-    document.createElement(
-        "p"
-    );
-
-
-// 共通クラス
-
-status.classList.add(
-    "learning-element-status"
-);
-
-
-// =========================
-// 通常
-// =========================
-
-if (
-    learningStatus ===
-    "normal"
-) {
 
     status.classList.add(
-        "learning-status-normal"
+        "learning-element-status"
     );
 
-}
 
 
-// =========================
-// 復習対象
-// =========================
+    if (
+        learningStatus ===
+        "normal"
+    ) {
 
-else if (
-    learningStatus ===
-    "review"
-) {
+        status.classList.add(
+            "learning-status-normal"
+        );
 
-    status.classList.add(
-        "learning-status-review"
-    );
-
-}
+    }
 
 
-// =========================
-// 苦手元素
-// =========================
+    else if (
+        learningStatus ===
+        "review"
+    ) {
 
-else if (
-    learningStatus ===
-    "weak"
-) {
+        status.classList.add(
+            "learning-status-review"
+        );
 
-    status.classList.add(
-        "learning-status-weak"
-    );
-
-}
+    }
 
 
-// =========================
-// 苦手卒業
-// =========================
+    else if (
+        learningStatus ===
+        "weak"
+    ) {
 
-else if (
-    learningStatus ===
-    "graduated"
-) {
+        status.classList.add(
+            "learning-status-weak"
+        );
 
-    status.classList.add(
-        "learning-status-graduated"
-    );
-
-}
+    }
 
 
-// 表示文字
+    else if (
+        learningStatus ===
+        "graduated"
+    ) {
 
-status.textContent =
+        status.classList.add(
+            "learning-status-graduated"
+        );
 
-    getElementLearningStatusText(
-        elementRecord
-    );
+    }
+
+
+    status.textContent =
+
+        getElementLearningStatusText(
+            elementRecord
+        );
 
 
 
@@ -2480,7 +2485,9 @@ function displayLearningRecord() {
 
 
 
+    // =========================
     // 学習記録がまだない
+    // =========================
 
     if (
         learningRecord.totalQuestions ===
@@ -2507,7 +2514,9 @@ function displayLearningRecord() {
 
 
 
+    // =========================
     // 学習記録あり
+    // =========================
 
     learningRecordEmpty
         .classList
@@ -2523,8 +2532,6 @@ function displayLearningRecord() {
         );
 
 
-
-    // 全体成績
 
     learningTotalSessions.textContent =
         `${learningRecord.totalSessions}回`;
@@ -2562,8 +2569,6 @@ function displayLearningRecord() {
         );
 
 
-
-    // 元素ごとの成績
 
     const elementRecords =
 
@@ -2712,8 +2717,6 @@ function showQuestion() {
 
 function checkAnswer() {
 
-    // 二重送信防止
-
     if (
         isAnswering
     ) {
@@ -2736,8 +2739,6 @@ function checkAnswer() {
 
 
 
-    // 空欄なら何もしない
-
     if (
         userAnswer === ""
     ) {
@@ -2747,9 +2748,6 @@ function checkAnswer() {
     }
 
 
-
-    // 元素記号の場合
-    // 全角英字を半角へ
 
     if (
         question.type ===
@@ -2782,16 +2780,12 @@ function checkAnswer() {
 
 
 
-    // 正解かどうか
-
     const isCorrect =
 
         userAnswer ===
         question.answer;
 
 
-
-    // 正解
 
     if (
         isCorrect
@@ -2805,8 +2799,6 @@ function checkAnswer() {
 
     }
 
-
-    // 不正解
 
     else {
 
@@ -2841,8 +2833,6 @@ function checkAnswer() {
 
 
 
-    // 学習記録保存
-
     recordLearningAnswer(
         question,
         isCorrect
@@ -2852,8 +2842,6 @@ function checkAnswer() {
     closePeriodicTable();
 
 
-
-    // 1秒後に次へ
 
     setTimeout(
 
@@ -2899,8 +2887,6 @@ function displayWrongAnswers() {
 
 
 
-    // 全問正解
-
     if (
         wrongAnswers.length ===
         0
@@ -2932,8 +2918,6 @@ function displayWrongAnswers() {
     }
 
 
-
-    // 間違いあり
 
     perfectScoreArea
         .classList
@@ -2974,8 +2958,6 @@ function displayWrongAnswers() {
 
 
 
-            // 問題番号
-
             const number =
                 document.createElement(
                     "p"
@@ -2998,8 +2980,6 @@ function displayWrongAnswers() {
 
 
 
-            // 問題文
-
             const question =
                 document.createElement(
                     "p"
@@ -3020,8 +3000,6 @@ function displayWrongAnswers() {
             );
 
 
-
-            // 自分の答え
 
             const userAnswer =
                 document.createElement(
@@ -3051,8 +3029,6 @@ function displayWrongAnswers() {
 
 
 
-            // 正解
-
             const correctAnswer =
                 document.createElement(
                     "p"
@@ -3080,8 +3056,6 @@ function displayWrongAnswers() {
             );
 
 
-
-            // 元素情報
 
             const elementInfo =
                 document.createElement(
@@ -3135,8 +3109,6 @@ function displayWrongAnswers() {
 // ======================================================
 
 function showScore() {
-
-    // テスト完了回数を保存
 
     recordCompletedSession();
 
@@ -3276,8 +3248,6 @@ function prepareQuizScreen() {
 
 
 
-    // 周期表ボタン
-
     if (
         periodicTableMode ===
         "enabled"
@@ -3403,7 +3373,7 @@ function startQuiz() {
 
 
 // ======================================================
-// 苦手・復習元素テスト開始
+// 復習・苦手元素テスト開始
 // ======================================================
 
 function startWeakElementsQuiz() {
@@ -3412,8 +3382,6 @@ function startWeakElementsQuiz() {
         getWeakStudyElements();
 
 
-
-    // 対象元素がなくなった場合
 
     if (
         targetElements.length ===
@@ -3537,9 +3505,6 @@ function startWrongRetry() {
 
 
 
-    // wrongAnswersを消す前に
-    // 再挑戦問題を作る
-
     const retryQuestions =
         createWrongRetryQuestions();
 
@@ -3573,8 +3538,6 @@ function startWrongRetry() {
 
 
 
-    // 画面切り替え
-
     settingsArea
         .classList
         .add(
@@ -3603,8 +3566,6 @@ function startWrongRetry() {
         );
 
 
-
-    // 周期表ボタン
 
     if (
         periodicTableMode ===
@@ -3780,7 +3741,7 @@ startButton.addEventListener(
 
 
 // =========================
-// 苦手元素から出題
+// 復習・苦手元素から出題
 // =========================
 
 weakElementsButton.addEventListener(
@@ -3874,6 +3835,20 @@ learningRecordBackButton.addEventListener(
     "click",
 
     showSettings
+
+);
+
+
+
+// =========================
+// 学習記録をリセット
+// =========================
+
+learningRecordResetButton.addEventListener(
+
+    "click",
+
+    resetLearningRecord
 
 );
 
