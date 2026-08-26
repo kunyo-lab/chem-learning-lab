@@ -266,7 +266,7 @@
 
 
             <!-- =========================
-                 苦手元素から出題
+                 復習・苦手元素から出題
             ========================== -->
 
             <div class="weak-elements-button-area">
@@ -713,6 +713,85 @@
                     </p>
 
 
+
+                    <!-- =========================
+                         学習状態フィルター
+                    ========================== -->
+
+                    <div
+                        class="learning-record-filter"
+                        aria-label="学習記録の表示切り替え"
+                    >
+
+                        <p class="learning-record-filter-title">
+                            表示する元素
+                        </p>
+
+
+                        <div class="learning-record-filter-buttons">
+
+
+                            <button
+                                id="learning-filter-all"
+                                class="learning-filter-button active"
+                                type="button"
+                                data-filter="all"
+                                aria-pressed="true"
+                            >
+                                すべて
+                            </button>
+
+
+                            <button
+                                id="learning-filter-review-weak"
+                                class="learning-filter-button"
+                                type="button"
+                                data-filter="review-weak"
+                                aria-pressed="false"
+                            >
+                                🔄 復習・苦手
+                            </button>
+
+
+                            <button
+                                id="learning-filter-weak"
+                                class="learning-filter-button"
+                                type="button"
+                                data-filter="weak"
+                                aria-pressed="false"
+                            >
+                                ⚠️ 苦手のみ
+                            </button>
+
+
+                            <button
+                                id="learning-filter-graduated"
+                                class="learning-filter-button"
+                                type="button"
+                                data-filter="graduated"
+                                aria-pressed="false"
+                            >
+                                🎓 苦手卒業
+                            </button>
+
+
+                            <button
+                                id="learning-filter-normal"
+                                class="learning-filter-button"
+                                type="button"
+                                data-filter="normal"
+                                aria-pressed="false"
+                            >
+                                ✅ 通常
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
                     <!--
                         JavaScriptで
                         元素ごとの学習記録を
@@ -728,7 +807,7 @@
 
 
             <!-- =========================
-             学習記録画面ボタン
+                 学習記録画面ボタン
             ========================== -->
 
             <div class="learning-record-buttons">
@@ -736,17 +815,17 @@
                 <button
                     id="learning-record-back-button"
                     type="button"
-    >
-                   設定画面へ戻る
-          </button>
+                >
+                    設定画面へ戻る
+                </button>
 
 
-            <button
+                <button
                     id="learning-record-reset-button"
                     type="button"
-    >
-                   学習記録をリセット
-            </button>
+                >
+                    学習記録をリセット
+                </button>
 
             </div>
 

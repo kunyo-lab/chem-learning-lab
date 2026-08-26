@@ -685,6 +685,161 @@ button {
 
 
 
+/* =================================================
+   学習記録フィルター
+================================================= */
+
+.learning-record-filter {
+    margin-bottom: 25px;
+
+    padding: 18px 15px;
+
+    background-color: #f8f9fb;
+
+    border: 1px solid #d9dee7;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+
+
+/* =========================
+   フィルター見出し
+========================= */
+
+.learning-record-filter-title {
+    margin-top: 0;
+
+    margin-bottom: 14px;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    color: #444444;
+}
+
+
+
+/* =========================
+   フィルターボタン一覧
+========================= */
+
+.learning-record-filter-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+
+
+/* =========================
+   フィルターボタン
+========================= */
+
+.learning-filter-button {
+    margin: 0;
+
+    padding: 8px 12px;
+
+    background-color: white;
+
+    border: 1px solid #b8c1cf;
+
+    border-radius: 20px;
+
+    color: #444444;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s,
+        border-color 0.2s,
+        color 0.2s,
+        transform 0.2s;
+}
+
+
+.learning-filter-button:hover {
+    background-color: #eef4ff;
+
+    border-color: #8aa9d6;
+}
+
+
+
+/* =========================
+   選択中のフィルター
+========================= */
+
+.learning-filter-button.active {
+    background-color: #426fa8;
+
+    border-color: #426fa8;
+
+    color: white;
+}
+
+
+.learning-filter-button.active:hover {
+    background-color: #365f92;
+
+    border-color: #365f92;
+}
+
+
+
+/* =========================
+   キーボード操作時
+========================= */
+
+.learning-filter-button:focus-visible {
+    outline: 3px solid #b7cef0;
+
+    outline-offset: 2px;
+}
+
+
+
+/* =========================
+   フィルター結果なし
+   JavaScriptで使用
+========================= */
+
+.learning-filter-empty {
+    grid-column: 1 / -1;
+
+    margin: 10px 0;
+
+    padding: 20px 15px;
+
+    background-color: #f7f7f7;
+
+    border: 1px dashed #cccccc;
+
+    border-radius: 8px;
+
+    color: #666666;
+
+    text-align: center;
+
+    line-height: 1.6;
+}
+
+
+
 /* =========================
    元素記録一覧
 ========================= */
@@ -1435,6 +1590,52 @@ button {
         font-size: 20px;
     }
 
+
+
+    /* =========================
+       学習記録フィルター
+    ========================= */
+
+    .learning-record-filter {
+        padding: 15px 10px;
+    }
+
+
+    .learning-record-filter-buttons {
+        display: grid;
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 8px;
+    }
+
+
+    .learning-filter-button {
+        width: 100%;
+
+        min-height: 42px;
+
+        padding: 8px 6px;
+
+        border-radius: 8px;
+
+        font-size: 12px;
+    }
+
+
+    #learning-filter-all {
+        grid-column: 1 / -1;
+    }
+
+
+
+    /* =========================
+       学習記録画面ボタン
+    ========================= */
 
     .learning-record-buttons {
         flex-direction: column;

@@ -1,6 +1,6 @@
 // ======================================================
 // 高校化学学習ラボ
-// 元素記号テスト v0.3.4
+// 元素記号テスト v0.3.5
 // ======================================================
 
 
@@ -51,6 +51,13 @@ let isAnswering = false;
 // 周期表をすでに作ったかどうか
 
 let periodicTableCreated = false;
+
+
+// =========================
+// 学習記録フィルター
+// =========================
+
+let currentLearningFilter = "all";
 
 
 
@@ -329,6 +336,17 @@ function resetLearningRecord() {
         return;
 
     }
+
+
+
+    // =========================
+    // フィルターを「すべて」に戻す
+    // =========================
+
+    setLearningRecordFilter(
+        "all",
+        false
+    );
 
 
 
@@ -774,6 +792,16 @@ const learningRecordResetButton =
     );
 
 
+// =========================
+// 学習記録フィルター
+// =========================
+
+const learningFilterButtons =
+    document.querySelectorAll(
+        ".learning-filter-button"
+    );
+
+
 
 // ======================================================
 // 周期表関係
@@ -1069,6 +1097,213 @@ function getElementLearningStatusText(
 
 
     return "✅ 通常";
+
+}
+
+
+
+// ======================================================
+// 学習状態の表示優先順位
+// ======================================================
+
+function getLearningStatusPriority(
+    elementRecord
+) {
+
+    const status =
+        getElementLearningStatus(
+            elementRecord
+        );
+
+
+    const priority = {
+
+        weak: 0,
+
+        review: 1,
+
+        graduated: 2,
+
+        normal: 3
+
+    };
+
+
+    return priority[
+        status
+    ] ?? 99;
+
+}
+
+
+
+// ======================================================
+// 学習記録をフィルターする
+// ======================================================
+
+function filterLearningElementRecords(
+    elementRecords
+) {
+
+    if (
+        currentLearningFilter ===
+        "all"
+    ) {
+
+        return elementRecords;
+
+    }
+
+
+    return elementRecords.filter(
+        elementRecord => {
+
+            const status =
+                getElementLearningStatus(
+                    elementRecord
+                );
+
+
+            if (
+                currentLearningFilter ===
+                "review-weak"
+            ) {
+
+                return (
+
+                    status === "review"
+
+                    ||
+
+                    status === "weak"
+
+                );
+
+            }
+
+
+            return (
+                status ===
+                currentLearningFilter
+            );
+
+        }
+    );
+
+}
+
+
+
+// ======================================================
+// フィルターボタンの見た目を更新する
+// ======================================================
+
+function updateLearningFilterButtons() {
+
+    learningFilterButtons.forEach(
+        button => {
+
+            const isActive =
+
+                button.dataset.filter ===
+                currentLearningFilter;
+
+
+            button.classList.toggle(
+                "active",
+                isActive
+            );
+
+
+            button.setAttribute(
+                "aria-pressed",
+                String(
+                    isActive
+                )
+            );
+
+        }
+    );
+
+}
+
+
+
+// ======================================================
+// 学習記録フィルターを変更する
+// ======================================================
+
+function setLearningRecordFilter(
+    filter,
+    refresh = true
+) {
+
+    currentLearningFilter =
+        filter;
+
+
+    updateLearningFilterButtons();
+
+
+    if (
+        refresh
+    ) {
+
+        displayLearningRecord();
+
+    }
+
+}
+
+
+
+// ======================================================
+// フィルター結果が0件のときの文章
+// ======================================================
+
+function getLearningFilterEmptyMessage() {
+
+    if (
+        currentLearningFilter ===
+        "review-weak"
+    ) {
+
+        return "現在、復習・苦手に該当する元素はありません。";
+
+    }
+
+
+    if (
+        currentLearningFilter ===
+        "weak"
+    ) {
+
+        return "現在、苦手元素はありません。";
+
+    }
+
+
+    if (
+        currentLearningFilter ===
+        "graduated"
+    ) {
+
+        return "まだ苦手卒業した元素はありません。";
+
+    }
+
+
+    if (
+        currentLearningFilter ===
+        "normal"
+    ) {
+
+        return "現在、通常状態の元素はありません。";
+
+    }
+
+
+    return "表示できる元素の記録がありません。";
 
 }
 
@@ -2576,13 +2811,87 @@ function displayLearningRecord() {
             learningRecord.elements
         )
         .sort(
-            (a, b) =>
-                a.number -
-                b.number
+            (a, b) => {
+
+                const priorityDifference =
+
+                    getLearningStatusPriority(
+                        a
+                    )
+                    -
+                    getLearningStatusPriority(
+                        b
+                    );
+
+
+                if (
+                    priorityDifference !== 0
+                ) {
+
+                    return priorityDifference;
+
+                }
+
+
+                return (
+                    a.number -
+                    b.number
+                );
+
+            }
         );
 
 
-    elementRecords.forEach(
+
+    const filteredElementRecords =
+
+        filterLearningElementRecords(
+            elementRecords
+        );
+
+
+
+    // =========================
+    // フィルター結果が0件
+    // =========================
+
+    if (
+        filteredElementRecords.length ===
+        0
+    ) {
+
+        const emptyMessage =
+            document.createElement(
+                "p"
+            );
+
+
+        emptyMessage.classList.add(
+            "learning-filter-empty"
+        );
+
+
+        emptyMessage.textContent =
+            getLearningFilterEmptyMessage();
+
+
+        learningElementsList
+            .appendChild(
+                emptyMessage
+            );
+
+
+        return;
+
+    }
+
+
+
+    // =========================
+    // 元素カードを表示
+    // =========================
+
+    filteredElementRecords.forEach(
 
         elementRecord => {
 
@@ -2638,6 +2947,12 @@ function showLearningRecord() {
         .remove(
             "hidden"
         );
+
+
+    setLearningRecordFilter(
+        "all",
+        false
+    );
 
 
     displayLearningRecord();
@@ -3854,6 +4169,34 @@ learningRecordResetButton.addEventListener(
 
 
 
+// =========================
+// 学習記録フィルター
+// =========================
+
+learningFilterButtons.forEach(
+
+    button => {
+
+        button.addEventListener(
+
+            "click",
+
+            function () {
+
+                setLearningRecordFilter(
+                    button.dataset.filter
+                );
+
+            }
+
+        );
+
+    }
+
+);
+
+
+
 // ======================================================
 // 周期表を開く
 // ======================================================
@@ -3975,5 +4318,11 @@ document.addEventListener(
 // ======================================================
 // 初期表示
 // ======================================================
+
+setLearningRecordFilter(
+    "all",
+    false
+);
+
 
 updateWeakElementsButtonState();
