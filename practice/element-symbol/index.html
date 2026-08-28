@@ -801,6 +801,50 @@
 
 
 
+                <!-- ==================================================
+                     最近10回の正解率
+                =================================================== -->
+
+                <div class="learning-history-chart">
+
+                    <h3>
+                        最近の正解率
+                    </h3>
+
+
+                    <p class="learning-history-chart-note">
+                        通常テストと復習・苦手元素テストの
+                        最近10回の正解率を表示します。
+                    </p>
+
+
+                    <div class="learning-chart-container">
+
+                        <canvas
+                            id="learning-rate-chart"
+                            role="img"
+                            aria-label="最近10回の正解率の推移"
+                        ></canvas>
+
+                    </div>
+
+
+                    <p
+                        id="learning-chart-empty"
+                        class="learning-chart-empty hidden"
+                    >
+                        まだグラフに表示できる学習履歴がありません。
+                    </p>
+
+
+                    <p class="learning-history-chart-subnote">
+                        ※グラフは v0.3.7 以降に完了したテストから記録されます。
+                    </p>
+
+                </div>
+
+
+
                 <!-- =========================
                      最終学習日時
                 ========================== -->
@@ -1053,6 +1097,11 @@
     <!-- 高校化学重要元素 -->
 
     <script src="elementSets.js"></script>
+
+
+    <!-- グラフ表示 -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
 
     <!-- テスト本体 -->

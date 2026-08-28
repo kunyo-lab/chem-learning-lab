@@ -1,1986 +1,893 @@
 // ======================================================
 // 高校化学学習ラボ
-// 元素記号テスト v0.3.6
+// 元素記号テスト v0.3.7
 // ======================================================
-
 
 // ======================================================
 // 初期設定
 // ======================================================
 
-let availableElements =
-    elements.filter(
-        element => element.number <= 20
-    );
+let availableElements = elements.filter(element => element.number <= 20);
 
 let totalQuestions = 10;
-
 let quizMode = "symbol-to-name";
-
 let quizRange = "1-20";
-
 let periodicTableMode = "disabled";
-
 
 // normal : 通常テスト
 // weak   : 復習・苦手元素テスト
-
 let currentQuizType = "normal";
 
+// true  : 通常テスト・復習テスト
+// false : 間違えた元素だけ再挑戦
+let shouldRecordSessionHistory = true;
 
 let questions = [];
-
 let currentQuestion = 0;
-
 let score = 0;
-
-
-// =========================
-// 間違えた問題
-// =========================
-
 let wrongAnswers = [];
-
-
-// 解答処理中の二重送信防止
-
 let isAnswering = false;
-
-
-// 周期表をすでに作ったかどうか
-
 let periodicTableCreated = false;
-
-
-// =========================
-// 学習記録フィルター
-// =========================
-
 let currentLearningFilter = "all";
-
-
+let learningRateChart = null;
 
 // ======================================================
 // 学習記録 localStorage
 // ======================================================
 
-const learningRecordKey =
-    "chemLearningLabElementQuizLearningRecord";
-
-
+const learningRecordKey = "chemLearningLabElementQuizLearningRecord";
 
 // ======================================================
 // 苦手判定の条件
 // ======================================================
 
-
-// 正式に苦手判定するための最低出題回数
-
 const weakMinimumAttempts = 3;
-
-
-// 苦手判定する最低不正解回数
-
 const weakMinimumIncorrect = 2;
-
-
-// この正解率未満なら苦手候補
-// 0.8 = 80%
-
 const weakCorrectRateThreshold = 0.8;
-
-
-// 連続正解で苦手卒業する回数
-
 const weakGraduationStreak = 3;
 
-
-
 // ======================================================
-// 初期状態の学習記録を作る
+// 学習記録
 // ======================================================
 
 function createInitialLearningRecord() {
-
     return {
-
         totalSessions: 0,
-
         totalQuestions: 0,
-
         totalCorrect: 0,
-
         totalIncorrect: 0,
-
         lastStudiedAt: null,
-
+        history: [],
         elements: {}
-
     };
-
 }
-
-
-
-// ======================================================
-// 学習記録を読み込む
-// ======================================================
 
 function loadLearningRecord() {
+    const savedRecord = localStorage.getItem(learningRecordKey);
 
-    const savedRecord =
-        localStorage.getItem(
-            learningRecordKey
-        );
-
-
-    if (
-        savedRecord === null
-    ) {
-
+    if (savedRecord === null) {
         return createInitialLearningRecord();
-
     }
 
-
     try {
-
-        const parsedRecord =
-            JSON.parse(
-                savedRecord
-            );
-
+        const parsedRecord = JSON.parse(savedRecord);
 
         const learningRecord = {
-
             ...createInitialLearningRecord(),
-
             ...parsedRecord,
-
-            elements:
-                parsedRecord.elements || {}
-
+            history: Array.isArray(parsedRecord.history)
+                ? parsedRecord.history
+                : [],
+            elements: parsedRecord.elements || {}
         };
 
-
-        // =========================
         // 旧バージョンとの互換性
-        // =========================
-
-        Object.values(
-            learningRecord.elements
-        )
-        .forEach(
-            elementRecord => {
-
-                if (
-                    typeof elementRecord.correctStreak
-                    !==
-                    "number"
-                ) {
-
-                    elementRecord.correctStreak =
-                        0;
-
-                }
-
+        Object.values(learningRecord.elements).forEach(elementRecord => {
+            if (typeof elementRecord.correctStreak !== "number") {
+                elementRecord.correctStreak = 0;
             }
-        );
-
+        });
 
         return learningRecord;
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "学習記録の読み込みに失敗しました。",
-            error
-        );
-
-
+    } catch (error) {
+        console.error("学習記録の読み込みに失敗しました。", error);
         return createInitialLearningRecord();
-
     }
-
 }
 
-
-
-// ======================================================
-// 学習記録を保存する
-// ======================================================
-
-function saveLearningRecord(
-    learningRecord
-) {
-
+function saveLearningRecord(learningRecord) {
     try {
-
         localStorage.setItem(
-
             learningRecordKey,
-
-            JSON.stringify(
-                learningRecord
-            )
-
+            JSON.stringify(learningRecord)
         );
-
+    } catch (error) {
+        console.error("学習記録の保存に失敗しました。", error);
     }
-
-
-    catch (error) {
-
-        console.error(
-            "学習記録の保存に失敗しました。",
-            error
-        );
-
-    }
-
 }
-
-
-
-// ======================================================
-// 学習記録をリセットする
-// ======================================================
 
 function resetLearningRecord() {
+    const learningRecord = loadLearningRecord();
 
-    const learningRecord =
-        loadLearningRecord();
-
-
-    if (
-        learningRecord.totalQuestions === 0
-    ) {
-
-        alert(
-            "削除する学習記録はありません。"
-        );
-
-
+    if (learningRecord.totalQuestions === 0) {
+        alert("削除する学習記録はありません。");
         return;
-
     }
 
+    const confirmed = window.confirm(
+        "本当に学習記録をリセットしますか？\n\n" +
+        "挑戦回数、正解数、不正解数、正解率、" +
+        "正解率グラフの履歴、元素ごとの記録、" +
+        "復習・苦手元素の情報がすべて削除されます。\n\n" +
+        "この操作は元に戻せません。"
+    );
 
-    const confirmed =
-        window.confirm(
-
-            "本当に学習記録をリセットしますか？\n\n" +
-
-            "挑戦回数、正解数、不正解数、正解率、" +
-
-            "元素ごとの記録、復習・苦手元素の情報がすべて削除されます。\n\n" +
-
-            "この操作は元に戻せません。"
-
-        );
-
-
-    if (
-        !confirmed
-    ) {
-
+    if (!confirmed) {
         return;
-
     }
-
 
     try {
-
-        localStorage.removeItem(
-            learningRecordKey
-        );
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "学習記録の削除に失敗しました。",
-            error
-        );
-
-
-        alert(
-            "学習記録の削除に失敗しました。"
-        );
-
-
+        localStorage.removeItem(learningRecordKey);
+    } catch (error) {
+        console.error("学習記録の削除に失敗しました。", error);
+        alert("学習記録の削除に失敗しました。");
         return;
-
     }
 
-
-    setLearningRecordFilter(
-        "all",
-        false
-    );
-
-
+    setLearningRecordFilter("all", false);
     displayLearningRecord();
-
-
     updateWeakElementsButtonState();
 
-
-    alert(
-        "学習記録をリセットしました。"
-    );
-
+    alert("学習記録をリセットしました。");
 }
 
-
-
-// ======================================================
-// 1問分の学習記録を保存する
-// ======================================================
-
-function recordLearningAnswer(
-    question,
-    isCorrect
-) {
-
-    const learningRecord =
-        loadLearningRecord();
-
+function recordLearningAnswer(question, isCorrect) {
+    const learningRecord = loadLearningRecord();
 
     learningRecord.totalQuestions++;
 
-
-    if (
-        isCorrect
-    ) {
-
+    if (isCorrect) {
         learningRecord.totalCorrect++;
-
-    }
-
-
-    else {
-
+    } else {
         learningRecord.totalIncorrect++;
-
     }
 
+    learningRecord.lastStudiedAt = new Date().toISOString();
 
-    learningRecord.lastStudiedAt =
-        new Date().toISOString();
+    const elementKey = String(question.element.number);
 
-
-    const elementKey =
-        String(
-            question.element.number
-        );
-
-
-    if (
-        !learningRecord.elements[
-            elementKey
-        ]
-    ) {
-
-        learningRecord.elements[
-            elementKey
-        ] = {
-
-            number:
-                question.element.number,
-
-            symbol:
-                question.element.symbol,
-
-            name:
-                question.element.name,
-
+    if (!learningRecord.elements[elementKey]) {
+        learningRecord.elements[elementKey] = {
+            number: question.element.number,
+            symbol: question.element.symbol,
+            name: question.element.name,
             attempts: 0,
-
             correct: 0,
-
             incorrect: 0,
-
             correctStreak: 0
-
         };
-
     }
 
+    const elementRecord = learningRecord.elements[elementKey];
 
-    const elementRecord =
-        learningRecord.elements[
-            elementKey
-        ];
-
-
-    if (
-        typeof elementRecord.correctStreak
-        !==
-        "number"
-    ) {
-
-        elementRecord.correctStreak =
-            0;
-
+    if (typeof elementRecord.correctStreak !== "number") {
+        elementRecord.correctStreak = 0;
     }
-
 
     elementRecord.attempts++;
 
-
-    if (
-        isCorrect
-    ) {
-
+    if (isCorrect) {
         elementRecord.correct++;
-
         elementRecord.correctStreak++;
-
-    }
-
-
-    else {
-
+    } else {
         elementRecord.incorrect++;
-
-        elementRecord.correctStreak =
-            0;
-
+        elementRecord.correctStreak = 0;
     }
 
-
-    saveLearningRecord(
-        learningRecord
-    );
-
+    saveLearningRecord(learningRecord);
 }
 
-
-
-// ======================================================
-// テストを最後まで終えた記録を保存する
-// ======================================================
-
 function recordCompletedSession() {
-
-    const learningRecord =
-        loadLearningRecord();
-
+    const learningRecord = loadLearningRecord();
 
     learningRecord.totalSessions++;
 
+    const completedAt = new Date().toISOString();
+    learningRecord.lastStudiedAt = completedAt;
 
-    learningRecord.lastStudiedAt =
-        new Date().toISOString();
+    // 「間違えた元素だけ再挑戦」はグラフの対象外
+    if (shouldRecordSessionHistory) {
+        const rate = totalQuestions > 0
+            ? Number((score / totalQuestions * 100).toFixed(1))
+            : 0;
 
+        learningRecord.history.push({
+            completedAt,
+            correct: score,
+            total: totalQuestions,
+            rate,
+            quizType: currentQuizType
+        });
+    }
 
-    saveLearningRecord(
-        learningRecord
-    );
-
+    saveLearningRecord(learningRecord);
 }
 
-
-
 // ======================================================
-// HTML要素の取得
+// HTML要素
 // ======================================================
 
+const questionElement = document.getElementById("question");
+const questionNumberElement = document.getElementById("question-number");
+const answerInput = document.getElementById("answer");
+const answerButton = document.getElementById("answer-button");
+const resultElement = document.getElementById("result");
 
-// =========================
-// 問題関係
-// =========================
+const settingsArea = document.getElementById("settings-area");
+const quizArea = document.getElementById("quiz-area");
+const scoreArea = document.getElementById("score-area");
+const scoreElement = document.getElementById("score");
 
-const questionElement =
-    document.getElementById(
-        "question"
-    );
+const wrongAnswersArea = document.getElementById("wrong-answers-area");
+const wrongAnswersList = document.getElementById("wrong-answers-list");
+const perfectScoreArea = document.getElementById("perfect-score-area");
+const wrongRetryArea = document.getElementById("wrong-retry-area");
+const wrongRetryButton = document.getElementById("wrong-retry-button");
 
+const startButton = document.getElementById("start-button");
+const retryButton = document.getElementById("retry-button");
+const settingsButton = document.getElementById("settings-button");
 
-const questionNumberElement =
-    document.getElementById(
-        "question-number"
-    );
+const weakElementsButton = document.getElementById("weak-elements-button");
+const weakElementsMessage = document.getElementById("weak-elements-message");
 
+const learningRecordButton = document.getElementById("learning-record-button");
+const resultLearningRecordButton = document.getElementById("result-learning-record-button");
+const learningRecordArea = document.getElementById("learning-record-area");
+const learningRecordEmpty = document.getElementById("learning-record-empty");
+const learningRecordContent = document.getElementById("learning-record-content");
+const learningTotalSessions = document.getElementById("learning-total-sessions");
+const learningTotalQuestions = document.getElementById("learning-total-questions");
+const learningTotalCorrect = document.getElementById("learning-total-correct");
+const learningTotalIncorrect = document.getElementById("learning-total-incorrect");
+const learningCorrectRate = document.getElementById("learning-correct-rate");
+const learningLastStudied = document.getElementById("learning-last-studied");
+const learningElementsList = document.getElementById("learning-elements-list");
+const learningRecordBackButton = document.getElementById("learning-record-back-button");
+const learningRecordResetButton = document.getElementById("learning-record-reset-button");
 
-const answerInput =
-    document.getElementById(
-        "answer"
-    );
+const learningRateChartCanvas = document.getElementById("learning-rate-chart");
+const learningChartContainer = document.querySelector(".learning-chart-container");
+const learningChartEmpty = document.getElementById("learning-chart-empty");
 
+const learningStatusWeakCount = document.getElementById("learning-status-weak-count");
+const learningStatusReviewCount = document.getElementById("learning-status-review-count");
+const learningStatusGraduatedCount = document.getElementById("learning-status-graduated-count");
+const learningStatusNormalCount = document.getElementById("learning-status-normal-count");
 
-const answerButton =
-    document.getElementById(
-        "answer-button"
-    );
+const learningFilterButtons = document.querySelectorAll(".learning-filter-button");
 
-
-const resultElement =
-    document.getElementById(
-        "result"
-    );
-
-
-
-// =========================
-// 画面関係
-// =========================
-
-const settingsArea =
-    document.getElementById(
-        "settings-area"
-    );
-
-
-const quizArea =
-    document.getElementById(
-        "quiz-area"
-    );
-
-
-const scoreArea =
-    document.getElementById(
-        "score-area"
-    );
-
-
-const scoreElement =
-    document.getElementById(
-        "score"
-    );
-
-
-
-// =========================
-// 間違えた問題
-// =========================
-
-const wrongAnswersArea =
-    document.getElementById(
-        "wrong-answers-area"
-    );
-
-
-const wrongAnswersList =
-    document.getElementById(
-        "wrong-answers-list"
-    );
-
-
-const perfectScoreArea =
-    document.getElementById(
-        "perfect-score-area"
-    );
-
-
-const wrongRetryArea =
-    document.getElementById(
-        "wrong-retry-area"
-    );
-
-
-const wrongRetryButton =
-    document.getElementById(
-        "wrong-retry-button"
-    );
-
-
-
-// =========================
-// 各種ボタン
-// =========================
-
-const startButton =
-    document.getElementById(
-        "start-button"
-    );
-
-
-const retryButton =
-    document.getElementById(
-        "retry-button"
-    );
-
-
-const settingsButton =
-    document.getElementById(
-        "settings-button"
-    );
-
-
-
-// =========================
-// 復習・苦手元素
-// =========================
-
-const weakElementsButton =
-    document.getElementById(
-        "weak-elements-button"
-    );
-
-
-const weakElementsMessage =
-    document.getElementById(
-        "weak-elements-message"
-    );
-
-
+const periodicTableButtonArea = document.getElementById("periodic-table-button-area");
+const periodicTableButton = document.getElementById("periodic-table-button");
+const periodicTableModal = document.getElementById("periodic-table-modal");
+const periodicTable = document.getElementById("periodic-table");
+const periodicTableCloseButton = document.getElementById("periodic-table-close-button");
+const periodicTableBottomCloseButton = document.getElementById("periodic-table-bottom-close-button");
 
 // ======================================================
-// 学習記録画面
-// ======================================================
-
-const learningRecordButton =
-    document.getElementById(
-        "learning-record-button"
-    );
-
-
-const resultLearningRecordButton =
-    document.getElementById(
-        "result-learning-record-button"
-    );
-
-
-const learningRecordArea =
-    document.getElementById(
-        "learning-record-area"
-    );
-
-
-const learningRecordEmpty =
-    document.getElementById(
-        "learning-record-empty"
-    );
-
-
-const learningRecordContent =
-    document.getElementById(
-        "learning-record-content"
-    );
-
-
-const learningTotalSessions =
-    document.getElementById(
-        "learning-total-sessions"
-    );
-
-
-const learningTotalQuestions =
-    document.getElementById(
-        "learning-total-questions"
-    );
-
-
-const learningTotalCorrect =
-    document.getElementById(
-        "learning-total-correct"
-    );
-
-
-const learningTotalIncorrect =
-    document.getElementById(
-        "learning-total-incorrect"
-    );
-
-
-const learningCorrectRate =
-    document.getElementById(
-        "learning-correct-rate"
-    );
-
-
-const learningLastStudied =
-    document.getElementById(
-        "learning-last-studied"
-    );
-
-
-const learningElementsList =
-    document.getElementById(
-        "learning-elements-list"
-    );
-
-
-const learningRecordBackButton =
-    document.getElementById(
-        "learning-record-back-button"
-    );
-
-
-const learningRecordResetButton =
-    document.getElementById(
-        "learning-record-reset-button"
-    );
-
-
-
-// ======================================================
-// v0.3.6 学習状態の集計
-// ======================================================
-
-const learningStatusWeakCount =
-    document.getElementById(
-        "learning-status-weak-count"
-    );
-
-
-const learningStatusReviewCount =
-    document.getElementById(
-        "learning-status-review-count"
-    );
-
-
-const learningStatusGraduatedCount =
-    document.getElementById(
-        "learning-status-graduated-count"
-    );
-
-
-const learningStatusNormalCount =
-    document.getElementById(
-        "learning-status-normal-count"
-    );
-
-
-
-// =========================
-// 学習記録フィルター
-// =========================
-
-const learningFilterButtons =
-    document.querySelectorAll(
-        ".learning-filter-button"
-    );
-
-
-
-// ======================================================
-// 周期表関係
-// ======================================================
-
-const periodicTableButtonArea =
-    document.getElementById(
-        "periodic-table-button-area"
-    );
-
-
-const periodicTableButton =
-    document.getElementById(
-        "periodic-table-button"
-    );
-
-
-const periodicTableModal =
-    document.getElementById(
-        "periodic-table-modal"
-    );
-
-
-const periodicTable =
-    document.getElementById(
-        "periodic-table"
-    );
-
-
-const periodicTableCloseButton =
-    document.getElementById(
-        "periodic-table-close-button"
-    );
-
-
-const periodicTableBottomCloseButton =
-    document.getElementById(
-        "periodic-table-bottom-close-button"
-    );
-
-
-
-// ======================================================
-// 配列をシャッフル
+// 共通関数
 // ======================================================
 
 function shuffle(array) {
+    const shuffled = [...array];
 
-    const shuffled =
-        [...array];
-
-
-    for (
-        let i = shuffled.length - 1;
-        i > 0;
-        i--
-    ) {
-
-        const randomIndex =
-            Math.floor(
-                Math.random() * (i + 1)
-            );
-
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
 
         [
             shuffled[i],
             shuffled[randomIndex]
-
         ] = [
-
             shuffled[randomIndex],
             shuffled[i]
-
         ];
-
     }
-
 
     return shuffled;
-
 }
-
-
-
-// ======================================================
-// 元素記号を整える
-// ======================================================
 
 function normalizeSymbol(text) {
-
-    return text
-        .trim()
-        .normalize(
-            "NFKC"
-        );
-
+    return text.trim().normalize("NFKC");
 }
 
-
-
-// ======================================================
-// 正解率
-// ======================================================
-
-function formatCorrectRate(
-    correct,
-    attempts
-) {
-
-    if (
-        attempts === 0
-    ) {
-
+function formatCorrectRate(correct, attempts) {
+    if (attempts === 0) {
         return "0%";
-
     }
 
+    const rate = correct / attempts * 100;
 
-    const rate =
-        correct /
-        attempts *
-        100;
-
-
-    const rateText =
-        rate
-            .toFixed(
-                1
-            )
-            .replace(
-                ".0",
-                ""
-            );
-
+    const rateText = rate
+        .toFixed(1)
+        .replace(".0", "");
 
     return `${rateText}%`;
-
 }
 
-
-
-// ======================================================
-// 最終学習日時
-// ======================================================
-
-function formatLastStudiedAt(
-    isoString
-) {
-
-    if (
-        !isoString
-    ) {
-
+function formatLastStudiedAt(isoString) {
+    if (!isoString) {
         return "-";
-
     }
 
+    const date = new Date(isoString);
 
-    const date =
-        new Date(
-            isoString
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
+    if (Number.isNaN(date.getTime())) {
         return "-";
-
     }
-
 
     return new Intl.DateTimeFormat(
-
         "ja-JP",
-
         {
-
-            year:
-                "numeric",
-
-            month:
-                "long",
-
-            day:
-                "numeric",
-
-            hour:
-                "2-digit",
-
-            minute:
-                "2-digit"
-
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         }
-
-    ).format(
-        date
-    );
-
+    ).format(date);
 }
 
+function formatChartDate(isoString) {
+    if (!isoString) {
+        return "-";
+    }
 
+    const date = new Date(isoString);
+
+    if (Number.isNaN(date.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat(
+        "ja-JP",
+        {
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    ).format(date);
+}
 
 // ======================================================
 // 出題範囲
 // ======================================================
 
 function setAvailableElements() {
-
-    if (
-        quizRange ===
-        "1-20"
-    ) {
-
-        availableElements =
-            elements.filter(
-                element =>
-                    element.number <= 20
-            );
-
+    if (quizRange === "1-20") {
+        availableElements = elements.filter(
+            element => element.number <= 20
+        );
+    } else if (quizRange === "1-36") {
+        availableElements = elements.filter(
+            element => element.number <= 36
+        );
+    } else if (quizRange === "important") {
+        availableElements = elements.filter(
+            element => importantElementNumbers.includes(element.number)
+        );
+    } else if (quizRange === "all") {
+        availableElements = [...elements];
     }
-
-
-    else if (
-        quizRange ===
-        "1-36"
-    ) {
-
-        availableElements =
-            elements.filter(
-                element =>
-                    element.number <= 36
-            );
-
-    }
-
-
-    else if (
-        quizRange ===
-        "important"
-    ) {
-
-        availableElements =
-            elements.filter(
-                element =>
-                    importantElementNumbers.includes(
-                        element.number
-                    )
-            );
-
-    }
-
-
-    else if (
-        quizRange ===
-        "all"
-    ) {
-
-        availableElements =
-            [...elements];
-
-    }
-
 }
 
-
-
 // ======================================================
-// 元素の学習状態を判定
+// 学習状態
 // ======================================================
 
-function getElementLearningStatus(
-    elementRecord
-) {
+function getElementLearningStatus(elementRecord) {
+    const attempts = Number(elementRecord.attempts || 0);
+    const correct = Number(elementRecord.correct || 0);
+    const incorrect = Number(elementRecord.incorrect || 0);
+    const correctStreak = Number(elementRecord.correctStreak || 0);
 
-    const attempts =
-        Number(
-            elementRecord.attempts || 0
-        );
-
-
-    const correct =
-        Number(
-            elementRecord.correct || 0
-        );
-
-
-    const incorrect =
-        Number(
-            elementRecord.incorrect || 0
-        );
-
-
-    const correctStreak =
-        Number(
-            elementRecord.correctStreak || 0
-        );
-
-
-    // 一度も間違えていない
-
-    if (
-        incorrect === 0
-    ) {
-
+    if (incorrect === 0) {
         return "normal";
-
     }
 
-
-    // 3回連続正解で苦手卒業
-
-    if (
-        correctStreak >=
-        weakGraduationStreak
-    ) {
-
+    if (correctStreak >= weakGraduationStreak) {
         return "graduated";
-
     }
 
-
-    const correctRate =
-        attempts > 0
-            ? correct / attempts
-            : 0;
-
-
-    // 苦手元素
+    const correctRate = attempts > 0
+        ? correct / attempts
+        : 0;
 
     if (
-
-        attempts >=
-        weakMinimumAttempts
-
-        &&
-
-        incorrect >=
-        weakMinimumIncorrect
-
-        &&
-
-        correctRate <
-        weakCorrectRateThreshold
-
+        attempts >= weakMinimumAttempts &&
+        incorrect >= weakMinimumIncorrect &&
+        correctRate < weakCorrectRateThreshold
     ) {
-
         return "weak";
-
     }
-
 
     return "review";
-
 }
 
+function getElementLearningStatusText(elementRecord) {
+    const status = getElementLearningStatus(elementRecord);
 
-
-// ======================================================
-// 学習状態の表示文字
-// ======================================================
-
-function getElementLearningStatusText(
-    elementRecord
-) {
-
-    const status =
-        getElementLearningStatus(
-            elementRecord
-        );
-
-
-    if (
-        status === "weak"
-    ) {
-
+    if (status === "weak") {
         return "⚠️ 苦手元素";
-
     }
 
-
-    if (
-        status === "review"
-    ) {
-
+    if (status === "review") {
         return "🔄 復習対象";
-
     }
 
-
-    if (
-        status === "graduated"
-    ) {
-
+    if (status === "graduated") {
         return "🎓 苦手卒業";
-
     }
-
 
     return "✅ 通常";
-
 }
 
-
-
-// ======================================================
-// 学習状態の表示優先順位
-// ======================================================
-
-function getLearningStatusPriority(
-    elementRecord
-) {
-
-    const status =
-        getElementLearningStatus(
-            elementRecord
-        );
-
+function getLearningStatusPriority(elementRecord) {
+    const status = getElementLearningStatus(elementRecord);
 
     const priority = {
-
         weak: 0,
-
         review: 1,
-
         graduated: 2,
-
         normal: 3
-
     };
 
-
-    return priority[
-        status
-    ] ?? 99;
-
+    return priority[status] ?? 99;
 }
 
-
-
-// ======================================================
-// v0.3.6 学習状態を集計
-// ======================================================
-
-function getLearningStatusCounts(
-    elementRecords
-) {
-
+function getLearningStatusCounts(elementRecords) {
     const counts = {
-
         weak: 0,
-
         review: 0,
-
         graduated: 0,
-
         normal: 0
-
     };
 
+    elementRecords.forEach(elementRecord => {
+        const status = getElementLearningStatus(elementRecord);
 
-    elementRecords.forEach(
-        elementRecord => {
-
-            const status =
-                getElementLearningStatus(
-                    elementRecord
-                );
-
-
-            if (
-                Object.prototype.hasOwnProperty.call(
-                    counts,
-                    status
-                )
-            ) {
-
-                counts[
-                    status
-                ]++;
-
-            }
-
+        if (Object.prototype.hasOwnProperty.call(counts, status)) {
+            counts[status]++;
         }
-    );
-
+    });
 
     return counts;
-
 }
 
+function updateLearningStatusSummary(elementRecords) {
+    const counts = getLearningStatusCounts(elementRecords);
 
-
-// ======================================================
-// v0.3.6 集計結果を表示
-// ======================================================
-
-function updateLearningStatusSummary(
-    elementRecords
-) {
-
-    const counts =
-        getLearningStatusCounts(
-            elementRecords
-        );
-
-
-    learningStatusWeakCount.textContent =
-        `${counts.weak}個`;
-
-
-    learningStatusReviewCount.textContent =
-        `${counts.review}個`;
-
-
-    learningStatusGraduatedCount.textContent =
-        `${counts.graduated}個`;
-
-
-    learningStatusNormalCount.textContent =
-        `${counts.normal}個`;
-
+    learningStatusWeakCount.textContent = `${counts.weak}個`;
+    learningStatusReviewCount.textContent = `${counts.review}個`;
+    learningStatusGraduatedCount.textContent = `${counts.graduated}個`;
+    learningStatusNormalCount.textContent = `${counts.normal}個`;
 }
 
-
-
 // ======================================================
-// 学習記録をフィルター
+// 学習記録フィルター
 // ======================================================
 
-function filterLearningElementRecords(
-    elementRecords
-) {
-
-    if (
-        currentLearningFilter ===
-        "all"
-    ) {
-
+function filterLearningElementRecords(elementRecords) {
+    if (currentLearningFilter === "all") {
         return elementRecords;
-
     }
 
+    return elementRecords.filter(elementRecord => {
+        const status = getElementLearningStatus(elementRecord);
 
-    return elementRecords.filter(
-        elementRecord => {
-
-            const status =
-                getElementLearningStatus(
-                    elementRecord
-                );
-
-
-            if (
-                currentLearningFilter ===
-                "review-weak"
-            ) {
-
-                return (
-
-                    status === "review"
-
-                    ||
-
-                    status === "weak"
-
-                );
-
-            }
-
-
-            return (
-                status ===
-                currentLearningFilter
-            );
-
+        if (currentLearningFilter === "review-weak") {
+            return status === "review" || status === "weak";
         }
-    );
 
+        return status === currentLearningFilter;
+    });
 }
-
-
-
-// ======================================================
-// フィルターボタンの見た目
-// ======================================================
 
 function updateLearningFilterButtons() {
+    learningFilterButtons.forEach(button => {
+        const isActive =
+            button.dataset.filter === currentLearningFilter;
 
-    learningFilterButtons.forEach(
-        button => {
-
-            const isActive =
-
-                button.dataset.filter ===
-                currentLearningFilter;
-
-
-            button.classList.toggle(
-                "active",
-                isActive
-            );
-
-
-            button.setAttribute(
-                "aria-pressed",
-                String(
-                    isActive
-                )
-            );
-
-        }
-    );
-
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
+    });
 }
 
-
-
-// ======================================================
-// フィルター変更
-// ======================================================
-
-function setLearningRecordFilter(
-    filter,
-    refresh = true
-) {
-
-    currentLearningFilter =
-        filter;
-
+function setLearningRecordFilter(filter, refresh = true) {
+    currentLearningFilter = filter;
 
     updateLearningFilterButtons();
 
-
-    if (
-        refresh
-    ) {
-
+    if (refresh) {
         displayLearningRecord();
-
     }
-
 }
-
-
-
-// ======================================================
-// フィルター結果0件
-// ======================================================
 
 function getLearningFilterEmptyMessage() {
-
-    if (
-        currentLearningFilter ===
-        "review-weak"
-    ) {
-
+    if (currentLearningFilter === "review-weak") {
         return "現在、復習・苦手に該当する元素はありません。";
-
     }
 
-
-    if (
-        currentLearningFilter ===
-        "weak"
-    ) {
-
+    if (currentLearningFilter === "weak") {
         return "現在、苦手元素はありません。";
-
     }
 
-
-    if (
-        currentLearningFilter ===
-        "graduated"
-    ) {
-
+    if (currentLearningFilter === "graduated") {
         return "まだ苦手卒業した元素はありません。";
-
     }
 
-
-    if (
-        currentLearningFilter ===
-        "normal"
-    ) {
-
+    if (currentLearningFilter === "normal") {
         return "現在、通常状態の元素はありません。";
-
     }
-
 
     return "表示できる元素の記録がありません。";
-
 }
 
+// ======================================================
+// v0.3.7 正解率グラフ
+// ======================================================
 
+function destroyLearningRateChart() {
+    if (learningRateChart) {
+        learningRateChart.destroy();
+        learningRateChart = null;
+    }
+}
+
+function updateLearningRateChart(history) {
+    destroyLearningRateChart();
+
+    const validHistory = Array.isArray(history)
+        ? history.filter(historyItem => {
+            return (
+                Number.isFinite(Number(historyItem.rate)) &&
+                Number.isFinite(Number(historyItem.correct)) &&
+                Number.isFinite(Number(historyItem.total)) &&
+                Number(historyItem.total) > 0
+            );
+        })
+        : [];
+
+    if (validHistory.length === 0) {
+        learningChartContainer.classList.add("hidden");
+
+        learningChartEmpty.textContent =
+            "まだグラフに表示できる学習履歴がありません。";
+
+        learningChartEmpty.classList.remove("hidden");
+        return;
+    }
+
+    if (typeof Chart === "undefined") {
+        learningChartContainer.classList.add("hidden");
+
+        learningChartEmpty.textContent =
+            "グラフを読み込めませんでした。インターネット接続を確認してください。";
+
+        learningChartEmpty.classList.remove("hidden");
+        return;
+    }
+
+    const recentHistory = validHistory.slice(-10);
+
+    const firstHistoryNumber =
+        validHistory.length - recentHistory.length + 1;
+
+    const labels = recentHistory.map(
+        (historyItem, index) =>
+            `第${firstHistoryNumber + index}回`
+    );
+
+    const rates = recentHistory.map(
+        historyItem => Number(historyItem.rate)
+    );
+
+    learningChartEmpty.classList.add("hidden");
+    learningChartContainer.classList.remove("hidden");
+
+    learningRateChart = new Chart(
+        learningRateChartCanvas,
+        {
+            type: "line",
+
+            data: {
+                labels,
+
+                datasets: [
+                    {
+                        label: "正解率",
+                        data: rates,
+                        borderColor: "#426fa8",
+                        backgroundColor: "#426fa8",
+                        pointBackgroundColor: "#ffffff",
+                        pointBorderColor: "#426fa8",
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 3,
+                        tension: 0.25,
+                        fill: false
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+                        callbacks: {
+                            title(tooltipItems) {
+                                const index = tooltipItems[0].dataIndex;
+                                return labels[index];
+                            },
+
+                            label(context) {
+                                const historyItem =
+                                    recentHistory[context.dataIndex];
+
+                                return [
+                                    `正解率：${historyItem.rate}%`,
+                                    `正解：${historyItem.correct} / ${historyItem.total}問`
+                                ];
+                            },
+
+                            afterLabel(context) {
+                                const historyItem =
+                                    recentHistory[context.dataIndex];
+
+                                const quizTypeText =
+                                    historyItem.quizType === "weak"
+                                        ? "復習・苦手元素テスト"
+                                        : "通常テスト";
+
+                                return [
+                                    `種類：${quizTypeText}`,
+                                    `日時：${formatChartDate(historyItem.completedAt)}`
+                                ];
+                            }
+                        }
+                    }
+                },
+
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100,
+
+                        ticks: {
+                            stepSize: 20,
+
+                            callback(value) {
+                                return `${value}%`;
+                            }
+                        },
+
+                        title: {
+                            display: true,
+                            text: "正解率"
+                        }
+                    },
+
+                    x: {
+                        title: {
+                            display: true,
+                            text: "テスト履歴"
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
 
 // ======================================================
-// 復習・苦手対象の元素を取得
+// 復習・苦手元素
 // ======================================================
 
 function getWeakStudyElements() {
+    const learningRecord = loadLearningRecord();
 
-    const learningRecord =
-        loadLearningRecord();
+    const targetElementNumbers = Object.values(
+        learningRecord.elements
+    )
+        .filter(elementRecord => {
+            const status = getElementLearningStatus(elementRecord);
 
-
-    const targetElementNumbers =
-
-        Object.values(
-            learningRecord.elements
-        )
-        .filter(
-            elementRecord => {
-
-                const status =
-                    getElementLearningStatus(
-                        elementRecord
-                    );
-
-
-                return (
-
-                    status === "weak"
-
-                    ||
-
-                    status === "review"
-
-                );
-
-            }
-        )
-        .map(
-            elementRecord =>
-                Number(
-                    elementRecord.number
-                )
-        );
-
+            return status === "weak" || status === "review";
+        })
+        .map(elementRecord => Number(elementRecord.number));
 
     return elements.filter(
-        element =>
-            targetElementNumbers.includes(
-                element.number
-            )
+        element => targetElementNumbers.includes(element.number)
     );
-
 }
 
-
-
-// ======================================================
-// 復習・苦手元素ボタン
-// ======================================================
-
 function updateWeakElementsButtonState() {
+    const targetElements = getWeakStudyElements();
 
-    const targetElements =
-        getWeakStudyElements();
-
-
-    if (
-        targetElements.length === 0
-    ) {
-
-        weakElementsButton.disabled =
-            true;
-
+    if (targetElements.length === 0) {
+        weakElementsButton.disabled = true;
 
         weakElementsMessage.textContent =
             "現在、復習が必要な元素はありません。";
 
-
-        weakElementsMessage
-            .classList
-            .remove(
-                "hidden"
-            );
-
-
+        weakElementsMessage.classList.remove("hidden");
         return;
-
     }
 
-
-    weakElementsButton.disabled =
-        false;
-
-
-    weakElementsMessage.textContent =
-        "";
-
-
-    weakElementsMessage
-        .classList
-        .add(
-            "hidden"
-        );
-
+    weakElementsButton.disabled = false;
+    weakElementsMessage.textContent = "";
+    weakElementsMessage.classList.add("hidden");
 }
 
-
-
 // ======================================================
-// 1問分の問題を作る
+// 問題作成
 // ======================================================
 
-function createQuestion(
-    element,
-    type
-) {
-
-    if (
-        type ===
-        "symbol-to-name"
-    ) {
-
+function createQuestion(element, type) {
+    if (type === "symbol-to-name") {
         return {
-
-            type:
-                "symbol-to-name",
-
-            question:
-                `${element.symbol} の元素名は？`,
-
-            answer:
-                element.name,
-
-            element:
-                element
-
+            type: "symbol-to-name",
+            question: `${element.symbol} の元素名は？`,
+            answer: element.name,
+            element
         };
-
     }
-
 
     return {
-
-        type:
-            "name-to-symbol",
-
-        question:
-            `${element.name} の元素記号は？`,
-
-        answer:
-            element.symbol,
-
-        element:
-            element
-
+        type: "name-to-symbol",
+        question: `${element.name} の元素記号は？`,
+        answer: element.symbol,
+        element
     };
-
 }
 
-
-
-// ======================================================
-// 選ばれた元素から問題を作る
-// ======================================================
-
-function createQuestionsFromElements(
-    selectedElements
-) {
-
-    questions =
-        selectedElements.map(
-            (element, index) => {
-
-                if (
-                    quizMode ===
-                    "symbol-to-name"
-                ) {
-
-                    return createQuestion(
-                        element,
-                        "symbol-to-name"
-                    );
-
-                }
-
-
-                if (
-                    quizMode ===
-                    "name-to-symbol"
-                ) {
-
-                    return createQuestion(
-                        element,
-                        "name-to-symbol"
-                    );
-
-                }
-
-
-                if (
-                    index <
-                    totalQuestions / 2
-                ) {
-
-                    return createQuestion(
-                        element,
-                        "symbol-to-name"
-                    );
-
-                }
-
-
-                return createQuestion(
-                    element,
-                    "name-to-symbol"
-                );
-
-            }
-        );
-
-
-    questions =
-        shuffle(
-            questions
-        );
-
-}
-
-
-
-// ======================================================
-// 通常問題を作る
-// ======================================================
-
-function createQuestions() {
-
-    const selectedElements =
-
-        shuffle(
-            availableElements
-        )
-        .slice(
-            0,
-            totalQuestions
-        );
-
-
-    createQuestionsFromElements(
-        selectedElements
-    );
-
-}
-
-
-
-// ======================================================
-// 復習・苦手元素テストを作る
-// ======================================================
-
-function createWeakElementsQuestions(
-    targetElements
-) {
-
-    const selectedElements =
-        [];
-
-
-    if (
-        targetElements.length >=
-        totalQuestions
-    ) {
-
-        selectedElements.push(
-
-            ...shuffle(
-                targetElements
-            )
-            .slice(
-                0,
-                totalQuestions
-            )
-
-        );
-
-    }
-
-
-    else {
-
-        while (
-            selectedElements.length <
-            totalQuestions
-        ) {
-
-            const shuffledTargets =
-                shuffle(
-                    targetElements
-                );
-
-
-            for (
-                const element of
-                shuffledTargets
-            ) {
-
-                selectedElements.push(
-                    element
-                );
-
-
-                if (
-                    selectedElements.length >=
-                    totalQuestions
-                ) {
-
-                    break;
-
-                }
-
-            }
-
+function createQuestionsFromElements(selectedElements) {
+    questions = selectedElements.map((element, index) => {
+        if (quizMode === "symbol-to-name") {
+            return createQuestion(element, "symbol-to-name");
         }
 
+        if (quizMode === "name-to-symbol") {
+            return createQuestion(element, "name-to-symbol");
+        }
+
+        if (index < totalQuestions / 2) {
+            return createQuestion(element, "symbol-to-name");
+        }
+
+        return createQuestion(element, "name-to-symbol");
+    });
+
+    questions = shuffle(questions);
+}
+
+function createQuestions() {
+    const selectedElements = shuffle(availableElements)
+        .slice(0, totalQuestions);
+
+    createQuestionsFromElements(selectedElements);
+}
+
+function createWeakElementsQuestions(targetElements) {
+    const selectedElements = [];
+
+    if (targetElements.length >= totalQuestions) {
+        selectedElements.push(
+            ...shuffle(targetElements).slice(0, totalQuestions)
+        );
+    } else {
+        while (selectedElements.length < totalQuestions) {
+            const shuffledTargets = shuffle(targetElements);
+
+            for (const element of shuffledTargets) {
+                selectedElements.push(element);
+
+                if (selectedElements.length >= totalQuestions) {
+                    break;
+                }
+            }
+        }
     }
 
-
-    createQuestionsFromElements(
-        selectedElements
-    );
-
+    createQuestionsFromElements(selectedElements);
 }
-
-
-
-// ======================================================
-// 間違えた問題から再挑戦問題を作る
-// ======================================================
 
 function createWrongRetryQuestions() {
+    const retryQuestions = wrongAnswers.map(wrongAnswer => ({
+        type: wrongAnswer.type,
+        question: wrongAnswer.question,
+        answer: wrongAnswer.correctAnswer,
+        element: wrongAnswer.element
+    }));
 
-    const retryQuestions =
-        wrongAnswers.map(
-            wrongAnswer => ({
-
-                type:
-                    wrongAnswer.type,
-
-                question:
-                    wrongAnswer.question,
-
-                answer:
-                    wrongAnswer.correctAnswer,
-
-                element:
-                    wrongAnswer.element
-
-            })
-        );
-
-
-    return shuffle(
-        retryQuestions
-    );
-
+    return shuffle(retryQuestions);
 }
 
-
-
 // ======================================================
-// 周期表の配置
+// 周期表
 // ======================================================
 
 const periodicTableLayout = [
-
     [
         1,
-
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null,
-
+        null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null,
         2
     ],
-
     [
         3, 4,
-
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null,
-
+        null, null, null, null, null, null, null, null,
+        null, null,
         5, 6, 7, 8, 9, 10
     ],
-
     [
         11, 12,
-
-        null, null, null,
-        null, null, null,
-        null, null, null,
-        null,
-
-        13, 14, 15,
-        16, 17, 18
+        null, null, null, null, null, null, null, null,
+        null, null,
+        13, 14, 15, 16, 17, 18
     ],
-
     [
-        19, 20, 21,
-        22, 23, 24,
-        25, 26, 27,
-        28, 29, 30,
-        31, 32, 33,
-        34, 35, 36
+        19, 20, 21, 22, 23, 24, 25, 26, 27,
+        28, 29, 30, 31, 32, 33, 34, 35, 36
     ],
-
     [
-        37, 38, 39,
-        40, 41, 42,
-        43, 44, 45,
-        46, 47, 48,
-        49, 50, 51,
-        52, 53, 54
+        37, 38, 39, 40, 41, 42, 43, 44, 45,
+        46, 47, 48, 49, 50, 51, 52, 53, 54
     ],
-
     [
-        55, 56,
-
-        "lanthanide",
-
-        72, 73, 74,
-        75, 76, 77,
-        78, 79, 80,
-        81, 82, 83,
-        84, 85, 86
+        55, 56, "lanthanide",
+        72, 73, 74, 75, 76, 77, 78, 79, 80,
+        81, 82, 83, 84, 85, 86
     ],
-
     [
-        87, 88,
-
-        "actinide",
-
-        104, 105, 106,
-        107, 108, 109,
-        110, 111, 112,
-        113, 114, 115,
-        116, 117, 118
+        87, 88, "actinide",
+        104, 105, 106, 107, 108, 109, 110, 111, 112,
+        113, 114, 115, 116, 117, 118
     ]
-
 ];
-
-
-
-// =========================
-// ランタノイド
-// =========================
 
 const lanthanides = [
-
-    57, 58, 59,
-    60, 61, 62,
-    63, 64, 65,
-    66, 67, 68,
-    69, 70, 71
-
+    57, 58, 59, 60, 61, 62, 63, 64,
+    65, 66, 67, 68, 69, 70, 71
 ];
-
-
-
-// =========================
-// アクチノイド
-// =========================
 
 const actinides = [
-
-    89, 90, 91,
-    92, 93, 94,
-    95, 96, 97,
-    98, 99, 100,
-    101, 102, 103
-
+    89, 90, 91, 92, 93, 94, 95, 96,
+    97, 98, 99, 100, 101, 102, 103
 ];
 
-
-
-// ======================================================
-// 元素ボタンを作る
-// ======================================================
-
-function createElementButton(
-    atomicNumber
-) {
-
-    const element =
-        elements.find(
-            item =>
-                item.number ===
-                atomicNumber
-        );
-
-
-    const button =
-        document.createElement(
-            "button"
-        );
-
-
-    button.type =
-        "button";
-
-
-    button.classList.add(
-        "element-button"
+function createElementButton(atomicNumber) {
+    const element = elements.find(
+        item => item.number === atomicNumber
     );
 
+    const button = document.createElement("button");
+    button.type = "button";
+    button.classList.add("element-button");
 
     button.innerHTML = `
-
         <span class="atomic-number">
             ${element.number}
         </span>
@@ -1992,2221 +899,873 @@ function createElementButton(
         <span class="element-name">
             ${element.name}
         </span>
-
     `;
 
-
     button.addEventListener(
-
         "click",
-
         function () {
-
-            selectElementFromPeriodicTable(
-                element
-            );
-
+            selectElementFromPeriodicTable(element);
         }
-
     );
-
 
     return button;
-
 }
-
-
-
-// ======================================================
-// 周期表を作る
-// ======================================================
 
 function createPeriodicTable() {
+    periodicTable.innerHTML = "";
 
-    periodicTable.innerHTML =
-        "";
+    const mainTable = document.createElement("div");
+    mainTable.classList.add("periodic-table-grid");
 
+    periodicTableLayout.forEach(row => {
+        row.forEach(item => {
+            if (item === null) {
+                const emptyCell = document.createElement("div");
+                emptyCell.classList.add("periodic-table-empty");
+                mainTable.appendChild(emptyCell);
+                return;
+            }
 
-    const mainTable =
-        document.createElement(
-            "div"
-        );
+            if (item === "lanthanide" || item === "actinide") {
+                const marker = document.createElement("div");
+                marker.classList.add("periodic-table-marker");
 
+                marker.textContent =
+                    item === "lanthanide"
+                        ? "57-71"
+                        : "89-103";
 
-    mainTable.classList.add(
-        "periodic-table-grid"
-    );
+                mainTable.appendChild(marker);
+                return;
+            }
 
-
-    periodicTableLayout.forEach(
-        row => {
-
-            row.forEach(
-                item => {
-
-                    if (
-                        item === null
-                    ) {
-
-                        const emptyCell =
-                            document.createElement(
-                                "div"
-                            );
-
-
-                        emptyCell.classList.add(
-                            "periodic-table-empty"
-                        );
-
-
-                        mainTable.appendChild(
-                            emptyCell
-                        );
-
-                    }
-
-
-                    else if (
-
-                        item ===
-                        "lanthanide"
-
-                        ||
-
-                        item ===
-                        "actinide"
-
-                    ) {
-
-                        const marker =
-                            document.createElement(
-                                "div"
-                            );
-
-
-                        marker.classList.add(
-                            "periodic-table-marker"
-                        );
-
-
-                        marker.textContent =
-
-                            item ===
-                            "lanthanide"
-
-                                ? "57-71"
-
-                                : "89-103";
-
-
-                        mainTable.appendChild(
-                            marker
-                        );
-
-                    }
-
-
-                    else {
-
-                        mainTable.appendChild(
-
-                            createElementButton(
-                                item
-                            )
-
-                        );
-
-                    }
-
-                }
+            mainTable.appendChild(
+                createElementButton(item)
             );
+        });
+    });
 
-        }
-    );
+    periodicTable.appendChild(mainTable);
 
+    const lanthanideArea = document.createElement("div");
+    lanthanideArea.classList.add("sub-periodic-table");
 
-    periodicTable.appendChild(
-        mainTable
-    );
+    const lanthanideLabel = document.createElement("div");
+    lanthanideLabel.classList.add("sub-table-label");
+    lanthanideLabel.textContent = "ランタノイド";
 
+    lanthanideArea.appendChild(lanthanideLabel);
 
-
-    // =========================
-    // ランタノイド
-    // =========================
-
-    const lanthanideArea =
-        document.createElement(
-            "div"
+    lanthanides.forEach(atomicNumber => {
+        lanthanideArea.appendChild(
+            createElementButton(atomicNumber)
         );
+    });
 
+    periodicTable.appendChild(lanthanideArea);
 
-    lanthanideArea.classList.add(
-        "sub-periodic-table"
-    );
+    const actinideArea = document.createElement("div");
+    actinideArea.classList.add("sub-periodic-table");
 
+    const actinideLabel = document.createElement("div");
+    actinideLabel.classList.add("sub-table-label");
+    actinideLabel.textContent = "アクチノイド";
 
-    const lanthanideLabel =
-        document.createElement(
-            "div"
+    actinideArea.appendChild(actinideLabel);
+
+    actinides.forEach(atomicNumber => {
+        actinideArea.appendChild(
+            createElementButton(atomicNumber)
         );
+    });
 
+    periodicTable.appendChild(actinideArea);
 
-    lanthanideLabel.classList.add(
-        "sub-table-label"
-    );
-
-
-    lanthanideLabel.textContent =
-        "ランタノイド";
-
-
-    lanthanideArea.appendChild(
-        lanthanideLabel
-    );
-
-
-    lanthanides.forEach(
-        atomicNumber => {
-
-            lanthanideArea.appendChild(
-
-                createElementButton(
-                    atomicNumber
-                )
-
-            );
-
-        }
-    );
-
-
-    periodicTable.appendChild(
-        lanthanideArea
-    );
-
-
-
-    // =========================
-    // アクチノイド
-    // =========================
-
-    const actinideArea =
-        document.createElement(
-            "div"
-        );
-
-
-    actinideArea.classList.add(
-        "sub-periodic-table"
-    );
-
-
-    const actinideLabel =
-        document.createElement(
-            "div"
-        );
-
-
-    actinideLabel.classList.add(
-        "sub-table-label"
-    );
-
-
-    actinideLabel.textContent =
-        "アクチノイド";
-
-
-    actinideArea.appendChild(
-        actinideLabel
-    );
-
-
-    actinides.forEach(
-        atomicNumber => {
-
-            actinideArea.appendChild(
-
-                createElementButton(
-                    atomicNumber
-                )
-
-            );
-
-        }
-    );
-
-
-    periodicTable.appendChild(
-        actinideArea
-    );
-
-
-    periodicTableCreated =
-        true;
-
+    periodicTableCreated = true;
 }
-
-
-
-// ======================================================
-// 周期表モーダルを開く
-// ======================================================
 
 function openPeriodicTable() {
-
-    if (
-        periodicTableMode !==
-        "enabled"
-    ) {
-
+    if (periodicTableMode !== "enabled") {
         return;
-
     }
 
-
-    if (
-        !periodicTableCreated
-    ) {
-
+    if (!periodicTableCreated) {
         createPeriodicTable();
-
     }
 
-
-    periodicTableModal
-        .classList
-        .remove(
-            "hidden"
-        );
-
-
-    document.body
-        .classList
-        .add(
-            "modal-open"
-        );
-
-
-    periodicTableCloseButton
-        .focus();
-
+    periodicTableModal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    periodicTableCloseButton.focus();
 }
 
+function closePeriodicTable(restoreFocus = false) {
+    periodicTableModal.classList.add("hidden");
+    document.body.classList.remove("modal-open");
 
-
-// ======================================================
-// 周期表モーダルを閉じる
-// ======================================================
-
-function closePeriodicTable(
-    restoreFocus = false
-) {
-
-    periodicTableModal
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    document.body
-        .classList
-        .remove(
-            "modal-open"
-        );
-
-
-    if (
-        restoreFocus
-    ) {
-
-        periodicTableButton
-            .focus();
-
+    if (restoreFocus) {
+        periodicTableButton.focus();
     }
-
 }
 
+function selectElementFromPeriodicTable(element) {
+    const question = questions[currentQuestion];
 
-
-// ======================================================
-// 周期表から元素を選択
-// ======================================================
-
-function selectElementFromPeriodicTable(
-    element
-) {
-
-    const question =
-        questions[
-            currentQuestion
-        ];
-
-
-    if (
-        question.type ===
-        "symbol-to-name"
-    ) {
-
-        answerInput.value =
-            element.name;
-
+    if (question.type === "symbol-to-name") {
+        answerInput.value = element.name;
+    } else if (question.type === "name-to-symbol") {
+        answerInput.value = element.symbol;
     }
-
-
-    else if (
-        question.type ===
-        "name-to-symbol"
-    ) {
-
-        answerInput.value =
-            element.symbol;
-
-    }
-
 
     closePeriodicTable();
-
-
     answerInput.focus();
-
 }
 
-
-
 // ======================================================
-// 元素ごとの学習記録カードを作る
+// 学習記録カード
 // ======================================================
 
-function createLearningElementItem(
-    elementRecord
-) {
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.classList.add(
-        "learning-element-item"
-    );
-
-
-    // =========================
-    // ヘッダー
-    // =========================
-
-    const header =
-        document.createElement(
-            "div"
-        );
-
-
-    header.classList.add(
-        "learning-element-header"
-    );
-
-
-    const number =
-        document.createElement(
-            "span"
-        );
-
-
-    number.classList.add(
-        "learning-element-number"
-    );
-
-
-    number.textContent =
-        `No.${elementRecord.number}`;
-
-
-    const symbol =
-        document.createElement(
-            "span"
-        );
-
-
-    symbol.classList.add(
-        "learning-element-symbol"
-    );
-
-
-    symbol.textContent =
-        elementRecord.symbol;
-
-
-    const name =
-        document.createElement(
-            "span"
-        );
-
-
-    name.classList.add(
-        "learning-element-name"
-    );
-
-
-    name.textContent =
-        elementRecord.name;
-
-
-    header.appendChild(
-        number
-    );
-
-
-    header.appendChild(
-        symbol
-    );
-
-
-    header.appendChild(
-        name
-    );
-
-
-    item.appendChild(
-        header
-    );
-
-
-
-    // =========================
-    // 成績
-    // =========================
-
-    const stats =
-        document.createElement(
-            "div"
-        );
-
-
-    stats.classList.add(
-        "learning-element-stats"
-    );
-
-
-    const attempts =
-        document.createElement(
-            "p"
-        );
-
-
-    attempts.classList.add(
-        "learning-element-stat"
-    );
-
-
-    attempts.textContent =
-        `出題：${elementRecord.attempts}回`;
-
-
-    const correct =
-        document.createElement(
-            "p"
-        );
-
-
-    correct.classList.add(
-        "learning-element-stat"
-    );
-
-
-    correct.textContent =
-        `正解：${elementRecord.correct}回`;
-
-
-    const incorrect =
-        document.createElement(
-            "p"
-        );
-
-
-    incorrect.classList.add(
-        "learning-element-stat"
-    );
-
-
-    incorrect.textContent =
-        `不正解：${elementRecord.incorrect}回`;
-
-
-    const streak =
-        document.createElement(
-            "p"
-        );
-
-
-    streak.classList.add(
-        "learning-element-stat"
-    );
-
-
+function createLearningElementItem(elementRecord) {
+    const item = document.createElement("div");
+    item.classList.add("learning-element-item");
+
+    const header = document.createElement("div");
+    header.classList.add("learning-element-header");
+
+    const number = document.createElement("span");
+    number.classList.add("learning-element-number");
+    number.textContent = `No.${elementRecord.number}`;
+
+    const symbol = document.createElement("span");
+    symbol.classList.add("learning-element-symbol");
+    symbol.textContent = elementRecord.symbol;
+
+    const name = document.createElement("span");
+    name.classList.add("learning-element-name");
+    name.textContent = elementRecord.name;
+
+    header.appendChild(number);
+    header.appendChild(symbol);
+    header.appendChild(name);
+    item.appendChild(header);
+
+    const stats = document.createElement("div");
+    stats.classList.add("learning-element-stats");
+
+    const attempts = document.createElement("p");
+    attempts.classList.add("learning-element-stat");
+    attempts.textContent = `出題：${elementRecord.attempts}回`;
+
+    const correct = document.createElement("p");
+    correct.classList.add("learning-element-stat");
+    correct.textContent = `正解：${elementRecord.correct}回`;
+
+    const incorrect = document.createElement("p");
+    incorrect.classList.add("learning-element-stat");
+    incorrect.textContent = `不正解：${elementRecord.incorrect}回`;
+
+    const streak = document.createElement("p");
+    streak.classList.add("learning-element-stat");
     streak.textContent =
+        `連続正解：${Number(elementRecord.correctStreak || 0)}回`;
 
-        `連続正解：${
-
-            Number(
-                elementRecord.correctStreak || 0
-            )
-
-        }回`;
-
-
-    const rate =
-        document.createElement(
-            "p"
-        );
-
-
-    rate.classList.add(
-        "learning-element-rate"
-    );
-
-
+    const rate = document.createElement("p");
+    rate.classList.add("learning-element-rate");
     rate.textContent =
-
-        `正解率：${
-
-            formatCorrectRate(
-
-                elementRecord.correct,
-
-                elementRecord.attempts
-
-            )
-
-        }`;
-
-
-
-    // =========================
-    // 現在の状態
-    // =========================
+        `正解率：${formatCorrectRate(
+            elementRecord.correct,
+            elementRecord.attempts
+        )}`;
 
     const learningStatus =
-        getElementLearningStatus(
-            elementRecord
-        );
+        getElementLearningStatus(elementRecord);
 
+    const status = document.createElement("p");
+    status.classList.add("learning-element-status");
 
-    const status =
-        document.createElement(
-            "p"
-        );
-
-
-    status.classList.add(
-        "learning-element-status"
-    );
-
-
-    if (
-        learningStatus ===
-        "normal"
-    ) {
-
-        status.classList.add(
-            "learning-status-normal"
-        );
-
+    if (learningStatus === "normal") {
+        status.classList.add("learning-status-normal");
+    } else if (learningStatus === "review") {
+        status.classList.add("learning-status-review");
+    } else if (learningStatus === "weak") {
+        status.classList.add("learning-status-weak");
+    } else if (learningStatus === "graduated") {
+        status.classList.add("learning-status-graduated");
     }
-
-
-    else if (
-        learningStatus ===
-        "review"
-    ) {
-
-        status.classList.add(
-            "learning-status-review"
-        );
-
-    }
-
-
-    else if (
-        learningStatus ===
-        "weak"
-    ) {
-
-        status.classList.add(
-            "learning-status-weak"
-        );
-
-    }
-
-
-    else if (
-        learningStatus ===
-        "graduated"
-    ) {
-
-        status.classList.add(
-            "learning-status-graduated"
-        );
-
-    }
-
 
     status.textContent =
-        getElementLearningStatusText(
-            elementRecord
-        );
+        getElementLearningStatusText(elementRecord);
 
+    stats.appendChild(attempts);
+    stats.appendChild(correct);
+    stats.appendChild(incorrect);
+    stats.appendChild(streak);
+    stats.appendChild(rate);
+    stats.appendChild(status);
 
-    stats.appendChild(
-        attempts
-    );
-
-
-    stats.appendChild(
-        correct
-    );
-
-
-    stats.appendChild(
-        incorrect
-    );
-
-
-    stats.appendChild(
-        streak
-    );
-
-
-    stats.appendChild(
-        rate
-    );
-
-
-    stats.appendChild(
-        status
-    );
-
-
-    item.appendChild(
-        stats
-    );
-
+    item.appendChild(stats);
 
     return item;
-
 }
 
-
-
 // ======================================================
-// 学習記録を表示
+// 学習記録表示
 // ======================================================
 
 function displayLearningRecord() {
+    const learningRecord = loadLearningRecord();
 
-    const learningRecord =
-        loadLearningRecord();
+    learningElementsList.innerHTML = "";
 
+    if (learningRecord.totalQuestions === 0) {
+        learningRecordEmpty.classList.remove("hidden");
+        learningRecordContent.classList.add("hidden");
 
-    learningElementsList.innerHTML =
-        "";
-
-
-    // =========================
-    // 学習記録なし
-    // =========================
-
-    if (
-        learningRecord.totalQuestions ===
-        0
-    ) {
-
-        learningRecordEmpty
-            .classList
-            .remove(
-                "hidden"
-            );
-
-
-        learningRecordContent
-            .classList
-            .add(
-                "hidden"
-            );
-
-
-        // リセット後に古い数字を残さない
-
-        updateLearningStatusSummary(
-            []
-        );
-
+        updateLearningStatusSummary([]);
+        updateLearningRateChart([]);
 
         return;
-
     }
 
-
-    // =========================
-    // 学習記録あり
-    // =========================
-
-    learningRecordEmpty
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    learningRecordContent
-        .classList
-        .remove(
-            "hidden"
-        );
-
+    learningRecordEmpty.classList.add("hidden");
+    learningRecordContent.classList.remove("hidden");
 
     learningTotalSessions.textContent =
         `${learningRecord.totalSessions}回`;
 
-
     learningTotalQuestions.textContent =
         `${learningRecord.totalQuestions}問`;
-
 
     learningTotalCorrect.textContent =
         `${learningRecord.totalCorrect}問`;
 
-
     learningTotalIncorrect.textContent =
         `${learningRecord.totalIncorrect}問`;
 
-
     learningCorrectRate.textContent =
-
         formatCorrectRate(
-
             learningRecord.totalCorrect,
-
             learningRecord.totalQuestions
-
         );
-
 
     learningLastStudied.textContent =
-
         formatLastStudiedAt(
-
             learningRecord.lastStudiedAt
-
         );
 
-
-
-    // ==================================================
-    // これまでに出題された元素を取得
-    // ==================================================
-
-    const elementRecords =
-
-        Object.values(
-            learningRecord.elements
-        )
-        .sort(
-            (a, b) => {
-
-                const priorityDifference =
-
-                    getLearningStatusPriority(
-                        a
-                    )
-                    -
-                    getLearningStatusPriority(
-                        b
-                    );
-
-
-                if (
-                    priorityDifference !== 0
-                ) {
-
-                    return priorityDifference;
-
-                }
-
-
-                return (
-                    a.number -
-                    b.number
-                );
-
-            }
-        );
-
-
-
-    // ==================================================
-    // v0.3.6 学習状態を集計
-    // ==================================================
-
-    updateLearningStatusSummary(
-        elementRecords
+    updateLearningRateChart(
+        learningRecord.history
     );
 
+    const elementRecords = Object.values(
+        learningRecord.elements
+    )
+        .sort((a, b) => {
+            const priorityDifference =
+                getLearningStatusPriority(a) -
+                getLearningStatusPriority(b);
 
+            if (priorityDifference !== 0) {
+                return priorityDifference;
+            }
 
-    // ==================================================
-    // フィルター
-    // ==================================================
+            return a.number - b.number;
+        });
+
+    updateLearningStatusSummary(elementRecords);
 
     const filteredElementRecords =
+        filterLearningElementRecords(elementRecords);
 
-        filterLearningElementRecords(
-            elementRecords
-        );
-
-
-    if (
-        filteredElementRecords.length ===
-        0
-    ) {
-
-        const emptyMessage =
-            document.createElement(
-                "p"
-            );
-
+    if (filteredElementRecords.length === 0) {
+        const emptyMessage = document.createElement("p");
 
         emptyMessage.classList.add(
             "learning-filter-empty"
         );
 
-
         emptyMessage.textContent =
             getLearningFilterEmptyMessage();
 
-
-        learningElementsList
-            .appendChild(
-                emptyMessage
-            );
-
+        learningElementsList.appendChild(
+            emptyMessage
+        );
 
         return;
-
     }
 
-
-    filteredElementRecords.forEach(
-        elementRecord => {
-
-            learningElementsList
-                .appendChild(
-
-                    createLearningElementItem(
-                        elementRecord
-                    )
-
-                );
-
-        }
-    );
-
+    filteredElementRecords.forEach(elementRecord => {
+        learningElementsList.appendChild(
+            createLearningElementItem(elementRecord)
+        );
+    });
 }
-
-
-
-// ======================================================
-// 学習記録画面を表示
-// ======================================================
 
 function showLearningRecord() {
-
     closePeriodicTable();
 
+    settingsArea.classList.add("hidden");
+    quizArea.classList.add("hidden");
+    scoreArea.classList.add("hidden");
 
-    settingsArea
-        .classList
-        .add(
-            "hidden"
-        );
+    learningRecordArea.classList.remove("hidden");
 
-
-    quizArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    scoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    learningRecordArea
-        .classList
-        .remove(
-            "hidden"
-        );
-
-
-    setLearningRecordFilter(
-        "all",
-        false
-    );
-
-
+    setLearningRecordFilter("all", false);
     displayLearningRecord();
 
-
     learningRecordArea.scrollIntoView({
-
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-
+        behavior: "smooth",
+        block: "start"
     });
-
 }
 
-
-
 // ======================================================
-// 問題を表示
+// 問題表示・判定
 // ======================================================
 
 function showQuestion() {
-
-    const question =
-        questions[
-            currentQuestion
-        ];
-
+    const question = questions[currentQuestion];
 
     questionNumberElement.textContent =
-
         `第${currentQuestion + 1}問 / ${totalQuestions}問`;
 
+    questionElement.textContent = question.question;
+    answerInput.value = "";
+    resultElement.textContent = "";
 
-    questionElement.textContent =
-        question.question;
-
-
-    answerInput.value =
-        "";
-
-
-    resultElement.textContent =
-        "";
-
-
-    isAnswering =
-        false;
-
-
-    answerButton.disabled =
-        false;
-
-
-    answerInput.disabled =
-        false;
-
-
-    periodicTableButton.disabled =
-        false;
-
+    isAnswering = false;
+    answerButton.disabled = false;
+    answerInput.disabled = false;
+    periodicTableButton.disabled = false;
 
     closePeriodicTable();
-
-
     answerInput.focus();
-
 }
 
-
-
-// ======================================================
-// 解答判定
-// ======================================================
-
 function checkAnswer() {
-
-    if (
-        isAnswering
-    ) {
-
+    if (isAnswering) {
         return;
-
     }
 
+    const question = questions[currentQuestion];
 
-    const question =
-        questions[
-            currentQuestion
-        ];
+    let userAnswer = answerInput.value.trim();
 
-
-    let userAnswer =
-        answerInput
-            .value
-            .trim();
-
-
-    if (
-        userAnswer === ""
-    ) {
-
+    if (userAnswer === "") {
         return;
-
     }
 
-
-    if (
-        question.type ===
-        "name-to-symbol"
-    ) {
-
-        userAnswer =
-            normalizeSymbol(
-                userAnswer
-            );
-
+    if (question.type === "name-to-symbol") {
+        userAnswer = normalizeSymbol(userAnswer);
     }
 
-
-    isAnswering =
-        true;
-
-
-    answerButton.disabled =
-        true;
-
-
-    answerInput.disabled =
-        true;
-
-
-    periodicTableButton.disabled =
-        true;
-
+    isAnswering = true;
+    answerButton.disabled = true;
+    answerInput.disabled = true;
+    periodicTableButton.disabled = true;
 
     const isCorrect =
+        userAnswer === question.answer;
 
-        userAnswer ===
-        question.answer;
-
-
-    if (
-        isCorrect
-    ) {
-
+    if (isCorrect) {
         score++;
-
-
+        resultElement.textContent = "正解！";
+    } else {
         resultElement.textContent =
-            "正解！";
-
-    }
-
-
-    else {
-
-        resultElement.textContent =
-
             `不正解　正解は「${question.answer}」`;
 
-
         wrongAnswers.push({
-
-            questionNumber:
-                currentQuestion + 1,
-
-            question:
-                question.question,
-
-            userAnswer:
-                userAnswer,
-
-            correctAnswer:
-                question.answer,
-
-            type:
-                question.type,
-
-            element:
-                question.element
-
+            questionNumber: currentQuestion + 1,
+            question: question.question,
+            userAnswer,
+            correctAnswer: question.answer,
+            type: question.type,
+            element: question.element
         });
-
     }
-
 
     recordLearningAnswer(
         question,
         isCorrect
     );
 
-
     closePeriodicTable();
 
-
     setTimeout(
-
         () => {
-
             currentQuestion++;
 
-
-            if (
-                currentQuestion <
-                totalQuestions
-            ) {
-
+            if (currentQuestion < totalQuestions) {
                 showQuestion();
-
-            }
-
-
-            else {
-
+            } else {
                 showScore();
-
             }
-
         },
-
         1000
-
     );
-
 }
 
-
-
 // ======================================================
-// 間違えた問題を表示
+// 間違えた問題
 // ======================================================
 
 function displayWrongAnswers() {
+    wrongAnswersList.innerHTML = "";
 
-    wrongAnswersList.innerHTML =
-        "";
-
-
-    if (
-        wrongAnswers.length ===
-        0
-    ) {
-
-        wrongAnswersArea
-            .classList
-            .add(
-                "hidden"
-            );
-
-
-        wrongRetryArea
-            .classList
-            .add(
-                "hidden"
-            );
-
-
-        perfectScoreArea
-            .classList
-            .remove(
-                "hidden"
-            );
-
-
+    if (wrongAnswers.length === 0) {
+        wrongAnswersArea.classList.add("hidden");
+        wrongRetryArea.classList.add("hidden");
+        perfectScoreArea.classList.remove("hidden");
         return;
-
     }
 
+    perfectScoreArea.classList.add("hidden");
+    wrongAnswersArea.classList.remove("hidden");
+    wrongRetryArea.classList.remove("hidden");
 
-    perfectScoreArea
-        .classList
-        .add(
-            "hidden"
+    wrongAnswers.forEach(wrongAnswer => {
+        const item = document.createElement("div");
+        item.classList.add("wrong-answer-item");
+
+        const number = document.createElement("p");
+        number.classList.add("wrong-answer-number");
+        number.textContent =
+            `第${wrongAnswer.questionNumber}問`;
+
+        item.appendChild(number);
+
+        const question = document.createElement("p");
+        question.classList.add(
+            "wrong-answer-question"
+        );
+        question.textContent =
+            wrongAnswer.question;
+
+        item.appendChild(question);
+
+        const userAnswer = document.createElement("p");
+        userAnswer.classList.add(
+            "wrong-answer-detail"
         );
 
+        userAnswer.innerHTML = `
+            <span class="wrong-answer-label">
+                あなたの答え：
+            </span>
+            ${wrongAnswer.userAnswer}
+        `;
 
-    wrongAnswersArea
-        .classList
-        .remove(
-            "hidden"
+        item.appendChild(userAnswer);
+
+        const correctAnswer = document.createElement("p");
+        correctAnswer.classList.add(
+            "wrong-answer-detail"
         );
 
+        correctAnswer.innerHTML = `
+            <span class="wrong-answer-label">
+                正解：
+            </span>
+            ${wrongAnswer.correctAnswer}
+        `;
 
-    wrongRetryArea
-        .classList
-        .remove(
-            "hidden"
+        item.appendChild(correctAnswer);
+
+        const elementInfo = document.createElement("p");
+        elementInfo.classList.add(
+            "wrong-answer-detail"
         );
 
+        elementInfo.innerHTML = `
+            <span class="wrong-answer-label">
+                元素：
+            </span>
+            原子番号
+            ${wrongAnswer.element.number}
+            ／
+            ${wrongAnswer.element.symbol}
+            ／
+            ${wrongAnswer.element.name}
+        `;
 
-    wrongAnswers.forEach(
-        wrongAnswer => {
-
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-
-            item.classList.add(
-                "wrong-answer-item"
-            );
-
-
-            const number =
-                document.createElement(
-                    "p"
-                );
-
-
-            number.classList.add(
-                "wrong-answer-number"
-            );
-
-
-            number.textContent =
-                `第${wrongAnswer.questionNumber}問`;
-
-
-            item.appendChild(
-                number
-            );
-
-
-            const question =
-                document.createElement(
-                    "p"
-                );
-
-
-            question.classList.add(
-                "wrong-answer-question"
-            );
-
-
-            question.textContent =
-                wrongAnswer.question;
-
-
-            item.appendChild(
-                question
-            );
-
-
-            const userAnswer =
-                document.createElement(
-                    "p"
-                );
-
-
-            userAnswer.classList.add(
-                "wrong-answer-detail"
-            );
-
-
-            userAnswer.innerHTML = `
-
-                <span class="wrong-answer-label">
-                    あなたの答え：
-                </span>
-
-                ${wrongAnswer.userAnswer}
-
-            `;
-
-
-            item.appendChild(
-                userAnswer
-            );
-
-
-            const correctAnswer =
-                document.createElement(
-                    "p"
-                );
-
-
-            correctAnswer.classList.add(
-                "wrong-answer-detail"
-            );
-
-
-            correctAnswer.innerHTML = `
-
-                <span class="wrong-answer-label">
-                    正解：
-                </span>
-
-                ${wrongAnswer.correctAnswer}
-
-            `;
-
-
-            item.appendChild(
-                correctAnswer
-            );
-
-
-            const elementInfo =
-                document.createElement(
-                    "p"
-                );
-
-
-            elementInfo.classList.add(
-                "wrong-answer-detail"
-            );
-
-
-            elementInfo.innerHTML = `
-
-                <span class="wrong-answer-label">
-                    元素：
-                </span>
-
-                原子番号
-                ${wrongAnswer.element.number}
-
-                ／
-                ${wrongAnswer.element.symbol}
-
-                ／
-                ${wrongAnswer.element.name}
-
-            `;
-
-
-            item.appendChild(
-                elementInfo
-            );
-
-
-            wrongAnswersList.appendChild(
-                item
-            );
-
-        }
-    );
-
+        item.appendChild(elementInfo);
+        wrongAnswersList.appendChild(item);
+    });
 }
 
-
-
 // ======================================================
-// 結果表示
+// 結果画面
 // ======================================================
 
 function showScore() {
-
     recordCompletedSession();
-
 
     closePeriodicTable();
 
-
-    quizArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    learningRecordArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    scoreArea
-        .classList
-        .remove(
-            "hidden"
-        );
-
+    quizArea.classList.add("hidden");
+    learningRecordArea.classList.add("hidden");
+    scoreArea.classList.remove("hidden");
 
     scoreElement.textContent =
-
         `${score} / ${totalQuestions} 点`;
-
 
     displayWrongAnswers();
 
-
     scoreArea.scrollIntoView({
-
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-
+        behavior: "smooth",
+        block: "start"
     });
-
 }
-
-
-
-// ======================================================
-// 結果表示を初期化
-// ======================================================
 
 function resetResultDisplay() {
+    wrongAnswersList.innerHTML = "";
 
-    wrongAnswersList.innerHTML =
-        "";
-
-
-    wrongAnswersArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    perfectScoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    wrongRetryArea
-        .classList
-        .add(
-            "hidden"
-        );
-
+    wrongAnswersArea.classList.add("hidden");
+    perfectScoreArea.classList.add("hidden");
+    wrongRetryArea.classList.add("hidden");
 }
 
-
-
 // ======================================================
-// テスト開始前の共通処理
+// テスト開始前
 // ======================================================
 
 function prepareQuizScreen() {
-
-    currentQuestion =
-        0;
-
-
-    score =
-        0;
-
-
-    wrongAnswers =
-        [];
-
-
-    isAnswering =
-        false;
-
+    currentQuestion = 0;
+    score = 0;
+    wrongAnswers = [];
+    isAnswering = false;
 
     resetResultDisplay();
 
+    settingsArea.classList.add("hidden");
+    scoreArea.classList.add("hidden");
+    learningRecordArea.classList.add("hidden");
+    quizArea.classList.remove("hidden");
 
-    settingsArea
-        .classList
-        .add(
+    if (periodicTableMode === "enabled") {
+        periodicTableButtonArea.classList.remove(
             "hidden"
         );
-
-
-    scoreArea
-        .classList
-        .add(
+    } else {
+        periodicTableButtonArea.classList.add(
             "hidden"
         );
-
-
-    learningRecordArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    quizArea
-        .classList
-        .remove(
-            "hidden"
-        );
-
-
-    if (
-        periodicTableMode ===
-        "enabled"
-    ) {
-
-        periodicTableButtonArea
-            .classList
-            .remove(
-                "hidden"
-            );
-
-    }
-
-
-    else {
-
-        periodicTableButtonArea
-            .classList
-            .add(
-                "hidden"
-            );
-
 
         closePeriodicTable();
-
     }
-
 }
-
-
-
-// ======================================================
-// 問題画面へスクロール
-// ======================================================
 
 function scrollToQuizArea() {
-
     quizArea.scrollIntoView({
-
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-
+        behavior: "smooth",
+        block: "start"
     });
-
 }
 
-
-
 // ======================================================
-// 通常テスト開始
+// 通常テスト
 // ======================================================
 
 function startQuiz() {
-
-    currentQuizType =
-        "normal";
-
+    currentQuizType = "normal";
+    shouldRecordSessionHistory = true;
 
     const selectedCount =
         document.querySelector(
             'input[name="questionCount"]:checked'
         );
 
-
     const selectedMode =
         document.querySelector(
             'input[name="quizMode"]:checked'
         );
-
 
     const selectedRange =
         document.querySelector(
             'input[name="quizRange"]:checked'
         );
 
-
     const selectedPeriodicTableMode =
         document.querySelector(
             'input[name="periodicTableMode"]:checked'
         );
 
-
     totalQuestions =
-        Number(
-            selectedCount.value
-        );
-
+        Number(selectedCount.value);
 
     quizMode =
         selectedMode.value;
 
-
     quizRange =
         selectedRange.value;
-
 
     periodicTableMode =
         selectedPeriodicTableMode.value;
 
-
     setAvailableElements();
-
-
     prepareQuizScreen();
-
-
     createQuestions();
-
-
     showQuestion();
-
-
     scrollToQuizArea();
-
 }
 
-
-
 // ======================================================
-// 復習・苦手元素テスト開始
+// 復習・苦手元素テスト
 // ======================================================
 
 function startWeakElementsQuiz() {
-
     const targetElements =
         getWeakStudyElements();
 
-
-    if (
-        targetElements.length ===
-        0
-    ) {
-
+    if (targetElements.length === 0) {
         showSettings();
-
 
         weakElementsMessage.textContent =
             "🎉 現在、復習が必要な元素はありません。";
 
-
-        weakElementsMessage
-            .classList
-            .remove(
-                "hidden"
-            );
-
+        weakElementsMessage.classList.remove(
+            "hidden"
+        );
 
         return;
-
     }
 
-
-    currentQuizType =
-        "weak";
-
+    currentQuizType = "weak";
+    shouldRecordSessionHistory = true;
 
     const selectedCount =
         document.querySelector(
             'input[name="questionCount"]:checked'
         );
 
-
     const selectedMode =
         document.querySelector(
             'input[name="quizMode"]:checked'
         );
-
 
     const selectedPeriodicTableMode =
         document.querySelector(
             'input[name="periodicTableMode"]:checked'
         );
 
-
     totalQuestions =
-        Number(
-            selectedCount.value
-        );
-
+        Number(selectedCount.value);
 
     quizMode =
         selectedMode.value;
 
-
     periodicTableMode =
         selectedPeriodicTableMode.value;
 
-
     prepareQuizScreen();
-
 
     createWeakElementsQuestions(
         targetElements
     );
 
-
     showQuestion();
-
-
     scrollToQuizArea();
-
 }
 
-
-
 // ======================================================
-// 同じ条件でもう一度挑戦
+// 再挑戦
 // ======================================================
 
 function retrySameConditions() {
-
-    if (
-        currentQuizType ===
-        "weak"
-    ) {
-
+    if (currentQuizType === "weak") {
         startWeakElementsQuiz();
-
         return;
-
     }
-
 
     startQuiz();
-
 }
 
-
-
-// ======================================================
-// 今回間違えた元素だけ再挑戦
-// ======================================================
-
 function startWrongRetry() {
-
-    if (
-        wrongAnswers.length ===
-        0
-    ) {
-
+    if (wrongAnswers.length === 0) {
         return;
-
     }
 
+    shouldRecordSessionHistory = false;
 
     const retryQuestions =
         createWrongRetryQuestions();
 
-
     totalQuestions =
         retryQuestions.length;
-
 
     questions =
         retryQuestions;
 
-
-    currentQuestion =
-        0;
-
-
-    score =
-        0;
-
-
-    wrongAnswers =
-        [];
-
-
-    isAnswering =
-        false;
-
+    currentQuestion = 0;
+    score = 0;
+    wrongAnswers = [];
+    isAnswering = false;
 
     resetResultDisplay();
 
+    settingsArea.classList.add("hidden");
+    scoreArea.classList.add("hidden");
+    learningRecordArea.classList.add("hidden");
+    quizArea.classList.remove("hidden");
 
-    settingsArea
-        .classList
-        .add(
+    if (periodicTableMode === "enabled") {
+        periodicTableButtonArea.classList.remove(
             "hidden"
         );
-
-
-    scoreArea
-        .classList
-        .add(
+    } else {
+        periodicTableButtonArea.classList.add(
             "hidden"
         );
-
-
-    learningRecordArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    quizArea
-        .classList
-        .remove(
-            "hidden"
-        );
-
-
-    if (
-        periodicTableMode ===
-        "enabled"
-    ) {
-
-        periodicTableButtonArea
-            .classList
-            .remove(
-                "hidden"
-            );
-
-    }
-
-
-    else {
-
-        periodicTableButtonArea
-            .classList
-            .add(
-                "hidden"
-            );
-
 
         closePeriodicTable();
-
     }
 
-
     showQuestion();
-
-
     scrollToQuizArea();
-
 }
-
-
 
 // ======================================================
 // 設定画面へ戻る
 // ======================================================
 
 function showSettings() {
-
     closePeriodicTable();
 
+    quizArea.classList.add("hidden");
+    scoreArea.classList.add("hidden");
+    learningRecordArea.classList.add("hidden");
+    settingsArea.classList.remove("hidden");
 
-    quizArea
-        .classList
-        .add(
-            "hidden"
-        );
+    answerInput.value = "";
+    resultElement.textContent = "";
 
-
-    scoreArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    learningRecordArea
-        .classList
-        .add(
-            "hidden"
-        );
-
-
-    settingsArea
-        .classList
-        .remove(
-            "hidden"
-        );
-
-
-    answerInput.value =
-        "";
-
-
-    resultElement.textContent =
-        "";
-
-
-    answerButton.disabled =
-        false;
-
-
-    answerInput.disabled =
-        false;
-
-
-    isAnswering =
-        false;
-
+    answerButton.disabled = false;
+    answerInput.disabled = false;
+    isAnswering = false;
 
     resetResultDisplay();
-
-
     updateWeakElementsButtonState();
 
-
     settingsArea.scrollIntoView({
-
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-
+        behavior: "smooth",
+        block: "start"
     });
-
 }
-
-
 
 // ======================================================
 // イベント
 // ======================================================
 
 answerButton.addEventListener(
-
     "click",
-
     checkAnswer
-
 );
-
 
 answerInput.addEventListener(
-
     "keydown",
-
     function (event) {
-
-        if (
-            event.key ===
-            "Enter"
-        ) {
-
+        if (event.key === "Enter") {
             checkAnswer();
-
         }
-
     }
-
 );
-
 
 startButton.addEventListener(
-
     "click",
-
     startQuiz
-
 );
-
 
 weakElementsButton.addEventListener(
-
     "click",
-
     startWeakElementsQuiz
-
 );
-
 
 wrongRetryButton.addEventListener(
-
     "click",
-
     startWrongRetry
-
 );
-
 
 retryButton.addEventListener(
-
     "click",
-
     retrySameConditions
-
 );
-
 
 settingsButton.addEventListener(
-
     "click",
-
     showSettings
-
 );
-
 
 learningRecordButton.addEventListener(
-
     "click",
-
     showLearningRecord
-
 );
-
 
 resultLearningRecordButton.addEventListener(
-
     "click",
-
     showLearningRecord
-
 );
-
 
 learningRecordBackButton.addEventListener(
-
     "click",
-
     showSettings
-
 );
-
 
 learningRecordResetButton.addEventListener(
-
     "click",
-
     resetLearningRecord
-
 );
 
-
-
-// =========================
-// 学習記録フィルター
-// =========================
-
-learningFilterButtons.forEach(
-
-    button => {
-
-        button.addEventListener(
-
-            "click",
-
-            function () {
-
-                setLearningRecordFilter(
-                    button.dataset.filter
-                );
-
-            }
-
-        );
-
-    }
-
-);
-
-
-
-// =========================
-// 周期表
-// =========================
+learningFilterButtons.forEach(button => {
+    button.addEventListener(
+        "click",
+        function () {
+            setLearningRecordFilter(
+                button.dataset.filter
+            );
+        }
+    );
+});
 
 periodicTableButton.addEventListener(
-
     "click",
-
     openPeriodicTable
-
 );
-
 
 periodicTableCloseButton.addEventListener(
-
     "click",
-
     function () {
-
-        closePeriodicTable(
-            true
-        );
-
+        closePeriodicTable(true);
     }
-
 );
-
 
 periodicTableBottomCloseButton.addEventListener(
-
     "click",
-
     function () {
-
-        closePeriodicTable(
-            true
-        );
-
+        closePeriodicTable(true);
     }
-
 );
-
 
 periodicTableModal.addEventListener(
-
     "click",
-
     function (event) {
-
-        if (
-            event.target ===
-            periodicTableModal
-        ) {
-
-            closePeriodicTable(
-                true
-            );
-
+        if (event.target === periodicTableModal) {
+            closePeriodicTable(true);
         }
-
     }
-
 );
-
 
 document.addEventListener(
-
     "keydown",
-
     function (event) {
-
         if (
-
-            event.key ===
-            "Escape"
-
-            &&
-
-            !periodicTableModal
-                .classList
-                .contains(
-                    "hidden"
-                )
-
+            event.key === "Escape" &&
+            !periodicTableModal.classList.contains(
+                "hidden"
+            )
         ) {
-
-            closePeriodicTable(
-                true
-            );
-
+            closePeriodicTable(true);
         }
-
     }
-
 );
-
-
 
 // ======================================================
 // 初期表示
@@ -4216,6 +1775,5 @@ setLearningRecordFilter(
     "all",
     false
 );
-
 
 updateWeakElementsButtonState();

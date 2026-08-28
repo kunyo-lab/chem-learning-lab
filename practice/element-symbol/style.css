@@ -770,6 +770,111 @@ button {
 
 
 /* =================================================
+   最近10回の正解率グラフ
+================================================= */
+
+.learning-history-chart {
+    margin-top: 30px;
+
+    padding-top: 25px;
+
+    border-top: 1px solid #dddddd;
+}
+
+
+.learning-history-chart h3 {
+    margin-top: 0;
+
+    margin-bottom: 8px;
+}
+
+
+.learning-history-chart-note {
+    margin-top: 0;
+
+    margin-bottom: 18px;
+
+    color: #666666;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+
+/* =========================
+   グラフ表示領域
+========================= */
+
+.learning-chart-container {
+    position: relative;
+
+    width: 100%;
+
+    height: 320px;
+
+    padding: 16px 12px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #d9dee7;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+
+#learning-rate-chart {
+    max-width: 100%;
+}
+
+
+
+/* =========================
+   グラフデータなし
+========================= */
+
+.learning-chart-empty {
+    margin: 15px 0 0;
+
+    padding: 18px 12px;
+
+    background-color: #f7f7f7;
+
+    border: 1px dashed #cccccc;
+
+    border-radius: 8px;
+
+    color: #666666;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+
+/* =========================
+   グラフ補足
+========================= */
+
+.learning-history-chart-subnote {
+    margin-top: 12px;
+
+    margin-bottom: 0;
+
+    color: #777777;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+
+
+/* =================================================
    最終学習
 ================================================= */
 
@@ -1769,6 +1874,28 @@ button {
 
     .learning-status-summary-value {
         font-size: 22px;
+    }
+
+
+
+    /* =========================
+       正解率グラフ
+    ========================= */
+
+    .learning-chart-container {
+        height: 260px;
+
+        padding: 12px 6px;
+    }
+
+
+    .learning-history-chart-note {
+        font-size: 13px;
+    }
+
+
+    .learning-history-chart-subnote {
+        font-size: 11px;
     }
 
 
